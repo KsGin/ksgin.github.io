@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;哈哈哈哈哈哈是不是超熟悉的。继 OpenGL 基础学完后，在继续钻研 OpenGL 比较深入的内容的同时，也顺便学学 DirectX 吧，毕竟在游戏界，DirectX 还是主流。在很久之前，写者也是接触了一些 Windows 编程的，当然仅仅只是一点。也就写出来了几个窗口，还是跟着教程的。现在在学习了 OpenGL 之后，那些东西也有了一些理解，是时候继续学习了。">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】1-A-Empty-Window">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/14/【DirectX】1-A-Empty-Window/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;哈哈哈哈哈哈是不是超熟悉的。继 OpenGL 基础学完后，在继续钻研 OpenGL 比较深入的内容的同时，也顺便学学 DirectX 吧，毕竟在游戏界，DirectX 还是主流。在很久之前，写者也是接触了一些 Windows 编程的，当然仅仅只是一点。也就写出来了几个窗口，还是跟着教程的。现在在学习了 OpenGL 之后，那些东西也有了一些理解，是时候继续学习了。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://image.ibb.co/gTCMZc/image.png">
+<meta property="og:image" content="https://image.ibb.co/kJsGHx/image.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.278Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】1-A-Empty-Window">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;哈哈哈哈哈哈是不是超熟悉的。继 OpenGL 基础学完后，在继续钻研 OpenGL 比较深入的内容的同时，也顺便学学 DirectX 吧，毕竟在游戏界，DirectX 还是主流。在很久之前，写者也是接触了一些 Windows 编程的，当然仅仅只是一点。也就写出来了几个窗口，还是跟着教程的。现在在学习了 OpenGL 之后，那些东西也有了一些理解，是时候继续学习了。">
+<meta name="twitter:image" content="https://image.ibb.co/gTCMZc/image.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】1-A-Empty-Window | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/14/【DirectX】1-A-Empty-Window/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】1-A-Empty-Window</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-14T19:28:58+08:00">2018-03-14</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;&emsp;哈哈哈哈哈哈是不是超熟悉的。继 OpenGL 基础学完后，在继续钻研 OpenGL 比较深入的内容的同时，也顺便学学 DirectX 吧，毕竟在游戏界，DirectX 还是主流。在很久之前，写者也是接触了一些 Windows 编程的，当然仅仅只是一点。也就写出来了几个窗口，还是跟着教程的。现在在学习了 OpenGL 之后，那些东西也有了一些理解，是时候继续学习了。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;在学习 DirectX 之前要先介绍下 Windows 的窗口编程，以及 Windows 的消息机制。</p>
+<h5 id="Windows-窗口"><a href="#Windows-窗口" class="headerlink" title="Windows 窗口"></a>Windows 窗口</h5><p><img src="https://image.ibb.co/gTCMZc/image.png" alt="Window"></p>
+<p>&emsp;&emsp;由图可见，Windows （WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW）窗口共分为<strong>标题栏</strong>，<strong>可调按钮（最大化，最小化和关闭）</strong>，<strong>客户区</strong>几个区域。&emsp;我们的渲染一般都是在客户区里边，当然 Windows 也会给我们提供修改其他部位的 API。在 Windows 编程中，我们使用 HWND（句柄） 来标记窗口。</p>
+<h5 id="Windows-消息机制"><a href="#Windows-消息机制" class="headerlink" title="Windows 消息机制"></a>Windows 消息机制</h5><p>&emsp;&emsp;Windows 使用消息队列来进行维护窗口消息，比如我们鼠标光标在窗口里按动了左键。此时操作系统会感知到这个事件，并且将一个左键消息发送到窗口的<strong>消息队列</strong>中，而我们的程序从消息队列中取出来消息并进行相应的处理。这个处理则是操作系统调用程序中处理消息的函数 WndProc 。</p>
+<p>&emsp;&emsp;消息队列，则是 Windows 在程序启动的时候创建的一个消息容器，这个容器用来存放所有的该程序窗口的消息。在我们触发了事件之后，操作系统将消息放入消息队列，而我们的程序会不断的从消息队列中读取消息并且处理他，这就是 Windows 窗口的消息机制。</p>
+<h5 id="创建一个-Windows-窗口"><a href="#创建一个-Windows-窗口" class="headerlink" title="创建一个 Windows 窗口"></a>创建一个 Windows 窗口</h5><ul>
+<li><h6 id="Windows-程序入口"><a href="#Windows-程序入口" class="headerlink" title="Windows 程序入口"></a>Windows 程序入口</h6><p>&emsp;&emsp;我们在学习 C/C++ 的时候已经写过不少的程序了，他们在 Windows 中都输入控制台应用，甚至在我们的 OpenGL 学习中，使用 Windows 开发的时候，也都是 Win32 控制台应用。在 Win32 控制台应用里，我们的程序入口时 main 方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc , <span class="keyword">char</span>** argv)</span></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;而在 Windows 程序中，我们则是使用了 WinMain 的入口方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> WINAPI <span class="title">WinMain</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    HINSTANCE hInstance, 		<span class="comment">//当前运行的实例的句柄</span></span></span></span><br><span class="line"><span class="function"><span class="params">    HINSTANCE hPreInstince, 	<span class="comment">//上一个运行的实例的句柄</span></span></span></span><br><span class="line"><span class="function"><span class="params">    LPSTR lpCmdLine, 			<span class="comment">//程序运行的命令行参数</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">int</span> nCmdShow)</span></span>&#123;				<span class="comment">//程序窗口的显示方式（不显示=0，正常显示=1，最小化=2，最大化=3）</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;注释上我们说明了各个参数的意义，有些参数我们在之后的代码中要用到。</p>
+</li>
+<li><h6 id="设计-Windows-类"><a href="#设计-Windows-类" class="headerlink" title="设计 Windows 类"></a>设计 Windows 类</h6><p>&emsp;&emsp;在 OpenGL 中，我们在创建窗口之前要进行 glfw 的配置，glew 的配置等，而在 Windows 程序窗口中，Windows 系统提供给了我们一个 Window 类：<a href="https://msdn.microsoft.com/en-us/library/ms633576%28v=vs.85%29.aspx" target="_blank" rel="noopener">WNDCLASS</a>，我们可以通过填充这个类的属性来配置我们的窗口类。</p>
+<p>&emsp;&emsp;窗口类的定义如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagWNDCLASS</span> &#123;</span></span><br><span class="line">  UINT      style;				<span class="comment">//窗口显示样式，枚举值</span></span><br><span class="line">  WNDPROC   lpfnWndProc;		<span class="comment">//消息处理回调函数</span></span><br><span class="line">  <span class="keyword">int</span>       cbClsExtra;			<span class="comment">//为窗口类额外分配的字节数</span></span><br><span class="line">  <span class="keyword">int</span>       cbWndExtra;			<span class="comment">//为窗口实例额外分配的字节数</span></span><br><span class="line">  HINSTANCE hInstance;			<span class="comment">//窗口过程的实例句柄</span></span><br><span class="line">  HICON     hIcon;				<span class="comment">//窗口图标</span></span><br><span class="line">  HCURSOR   hCursor;			<span class="comment">//窗口光标</span></span><br><span class="line">  HBRUSH    hbrBackground;		 <span class="comment">//窗口背景画刷</span></span><br><span class="line">  LPCTSTR   lpszMenuName;		<span class="comment">//窗口菜单</span></span><br><span class="line">  LPCTSTR   lpszClassName;		<span class="comment">//窗口类的名字（！和CreateWindow里的参数必须一样！）</span></span><br><span class="line">&#125; WNDCLASS, *PWNDCLASS;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<em>style</em> 参数的具体枚举值我们可以看 MSDN 文档（在学习 Windows 开发的时候，MSDN 是我们永远的老师）：<a href="https://msdn.microsoft.com/en-us/library/ff729176%28v=vs.85%29.aspx" target="_blank" rel="noopener">Window Class Styles</a></p>
+<p>&emsp;&emsp;我们创建 WNDCLASS 的实例，并为他赋值，即设计好了我们的窗口类。如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">WNDCLASS winClass;</span><br><span class="line">winClass.style = CS_VREDRAW | CS_HREDRAW;</span><br><span class="line">winClass.hInstance = hInstance;</span><br><span class="line">winClass.cbClsExtra = <span class="number">0</span>;</span><br><span class="line">winClass.cbWndExtra = <span class="number">0</span>;</span><br><span class="line">winClass.hCursor = LoadCursor(<span class="literal">nullptr</span>, IDC_ARROW);</span><br><span class="line">winClass.hIcon = LoadIcon(<span class="literal">nullptr</span>, IDC_ICON);</span><br><span class="line">winClass.hbrBackground = <span class="keyword">static_cast</span>&lt;HBRUSH&gt;(GetStockObject(DKGRAY_BRUSH));</span><br><span class="line">winClass.lpfnWndProc = <span class="keyword">static_cast</span>&lt;WNDPROC&gt;(WndProc);</span><br><span class="line">winClass.lpszClassName = <span class="string">"windowClass"</span>;</span><br><span class="line">winClass.lpszMenuName = <span class="literal">nullptr</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><h6 id="注册窗口类"><a href="#注册窗口类" class="headerlink" title="注册窗口类"></a>注册窗口类</h6><p>&emsp;&emsp;在设计好窗口类之后，我们需要向 Windows 注册这个类（请注意我们只是用给定的类模板设计了我们的窗口类，在程序中我们的 windowClass 只是一个 WNDCLASS 的实例对象而已，我们需要注册他成为一个类而让我们可以使用它来创建窗口）。</p>
+<p>&emsp;&emsp;我们使用 RegisterClass 方法来注册我们的窗口类，传入 WNDCLASS 的实例对象，他将为我们创建名为winClass.lpszClassName 的窗口类。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!RegisterClass(&amp;winClass)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>,<span class="string">"ERROR::WINDOWS_CLASS::REGISTER_ERROR"</span>, <span class="string">"REGISTER REEOR"</span> , <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><h6 id="创建窗口"><a href="#创建窗口" class="headerlink" title="创建窗口"></a>创建窗口</h6><p>&emsp;&emsp;注册完了窗口类之后，我们便可以使用它来创建窗口，使用 CreateWindow 方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">HWND WINAPI <span class="title">CreateWindow</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">  _In_opt_ LPCTSTR   lpClassName,	<span class="comment">//窗口类名称</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_opt_ LPCTSTR   lpWindowName,	<span class="comment">//窗口名称</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     DWORD     dwStyle,		<span class="comment">//窗口样式，枚举值</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     <span class="keyword">int</span>       x,				<span class="comment">//窗口左上角坐标</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     <span class="keyword">int</span>       y,				<span class="comment">//窗口左上角坐标</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     <span class="keyword">int</span>       nWidth,		<span class="comment">//窗口宽度</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     <span class="keyword">int</span>       nHeight,		<span class="comment">//窗口高度</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_opt_ HWND      hWndParent,	<span class="comment">//父窗口（创建子窗口时有用）</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_opt_ HMENU     hMenu,			<span class="comment">//窗口菜单</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_opt_ HINSTANCE hInstance,		<span class="comment">//实例句柄</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_opt_ LPVOID    lpParam		<span class="comment">//附加参数</span></span></span></span><br><span class="line"><span class="function"><span class="params">)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;各个参数的用途可以看注释，关于窗口样式的详细信息看 MSDN 文档：<a href="https://msdn.microsoft.com/en-us/library/ms632600%28v=vs.85%29.aspx" target="_blank" rel="noopener">Window Styles</a>，当窗口创建成功时会返回他的窗口句柄 hWnd。</p>
+<p>&emsp;&emsp;现在我们使用它来创建一个窗口：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">auto</span> windowHandle = CreateWindow(</span><br><span class="line">    <span class="string">"windowClass"</span>, </span><br><span class="line">    <span class="string">"Empty Window"</span>, </span><br><span class="line">    WS_EX_TOPMOST | WS_OVERLAPPEDWINDOW, </span><br><span class="line">    <span class="number">0</span>, </span><br><span class="line">    <span class="number">0</span>, </span><br><span class="line">    <span class="number">1920</span>, </span><br><span class="line">    <span class="number">1080</span>, </span><br><span class="line">    <span class="literal">nullptr</span>, </span><br><span class="line">    <span class="literal">nullptr</span>, </span><br><span class="line">    hInstance, </span><br><span class="line">    <span class="literal">nullptr</span>);</span><br><span class="line"><span class="keyword">if</span> (!windowHandle) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>,<span class="string">"ERROR::WINDOWS_CREATE::CREATE_ERROR"</span>, <span class="string">"CREATE REEOR"</span> , <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><h6 id="窗口更新"><a href="#窗口更新" class="headerlink" title="窗口更新"></a>窗口更新</h6><p>&emsp;&emsp;创建好窗口后，我们可以使用 ShowWindow 来显示窗口，而在窗口更新之后，则可以使用 UpdateWindow 来更新窗口显示，在调用 ShowWindow 之后也需要调用 UpdateWindow 。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ShowWindow(windowHandle, SW_SHOWNORMAL);</span><br><span class="line">UpdateWindow(windowHandle);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;ShowWindow 有两个参数，窗口句柄和窗口的显示方式，这也是一个枚举值，具体值属性我们可以看这里：<a href="https://msdn.microsoft.com/en-us/library/ms633548%28v=vs.85%29.aspx" target="_blank" rel="noopener">Show Controls</a></p>
+</li>
+<li><h6 id="消息处理"><a href="#消息处理" class="headerlink" title="消息处理"></a>消息处理</h6><p>&emsp;&emsp;文章前边介绍了 Windows 的消息处理方式，而现在需要写一个消息循环来不断的从消息队列读取消息并且处理消息，这里我们需要介绍 Windows 封装好的消息结构体和消息处理函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//消息结构体</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagMSG</span> &#123;</span>     </span><br><span class="line">    HWND hwnd;  	<span class="comment">//窗口句柄</span></span><br><span class="line">    UINT message;  	<span class="comment">//消息标识</span></span><br><span class="line">    WPARAM wParam;  <span class="comment">//消息附加信息</span></span><br><span class="line">    LPARAM lParam;  <span class="comment">//消息附加信息</span></span><br><span class="line">    DWORD time;  	<span class="comment">//消息到达消息队列的时间</span></span><br><span class="line">    POINT pt;  		<span class="comment">//鼠标当前位置</span></span><br><span class="line">&#125; MSG;  </span><br><span class="line"></span><br><span class="line"><span class="comment">//从消息队列中得到消息	成功返回非零</span></span><br><span class="line"><span class="function">BOOL WINAPI <span class="title">PeekMessage</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">  _Out_    LPMSG lpMsg,			<span class="comment">//msg指针</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_opt_ HWND  hWnd,			<span class="comment">//窗口句柄</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     UINT  wMsgFilterMin,	<span class="comment">//指定被检查的消息范围第一个消息，通常为0</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     UINT  wMsgFilterMax,	<span class="comment">//指定被检查的消息范围最后一个消息，通常为0</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_     UINT  wRemoveMsg		<span class="comment">//是否将消息从消息队列中删除（PM_NOREMOVE 保留，PM_REMOVE 删除）</span></span></span></span><br><span class="line"><span class="function"><span class="params">)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们通过使用 PeekMessage（还有个 GetMessage也可以得到消息，但是不会 Remove） 来接收消息，然后使用 TranslateMessage 转化消息（将其转换为字符消息），最后通过 DispatchMessage 来将消息传递给窗口处理函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">MSG uMsg;</span><br><span class="line">ZeroMemory(&amp;uMsg, <span class="keyword">sizeof</span>(MSG));</span><br><span class="line">uMsg.message = WM_ACTIVATE;</span><br><span class="line"><span class="keyword">while</span> (uMsg.message != WM_QUIT) &#123;</span><br><span class="line">	<span class="keyword">if</span> (PeekMessage(&amp;uMsg, <span class="literal">nullptr</span>, <span class="number">0</span>, <span class="number">0</span>, PM_REMOVE)) &#123;	<span class="comment">//使用 PeekMessage</span></span><br><span class="line">		TranslateMessage(&amp;uMsg);		<span class="comment">//使用 TranslateMessage</span></span><br><span class="line">		DispatchMessage(&amp;uMsg);			<span class="comment">//使用 DispatchMessage</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这两个方法都比较简单，传入消息结构体就可以了。之后，我们在窗口内部产生的消息将会被翻译成字符消息后送往 WindowProc（窗口处理消息），这是一个回调（CALLBACK）函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">LRESULT CALLBACK <span class="title">WndProc</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> HWND hwnd, 	<span class="comment">//窗口句柄</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> UINT uMsg, 	<span class="comment">//消息结构体</span></span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> WPARAM wParam, <span class="comment">//消息附加参数</span></span></span></span><br><span class="line"><span class="function"><span class="params">    LPARAM lParam)</span>		<span class="comment">//消息附加参数</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个窗口过程函数是一个 CALLBACK 函数，我们在设置窗口类的时候就将他绑定到了窗口类的过程函数上<code>winClass.lpfnWndProc = static_cast&lt;WNDPROC&gt;(WndProc);</code>，他会在收到消息后自动被调用。我们可以在他内部根据消息的不同来做不一样的处理。</p>
+<p>&emsp;&emsp;Windows 将各种消息封装为常量，所以我们可以直接根据消息的值来判断：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">LRESULT CALLBACK <span class="title">WndProc</span><span class="params">(<span class="keyword">const</span> HWND hwnd, <span class="keyword">const</span> UINT uMsg, <span class="keyword">const</span> WPARAM wParam, LPARAM lParam)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">switch</span> (uMsg) &#123;</span><br><span class="line">	<span class="keyword">case</span> WM_LBUTTONDOWN:</span><br><span class="line">		MessageBox(<span class="literal">nullptr</span>, <span class="string">"鼠标按下"</span>, <span class="string">"消息详情"</span>, <span class="number">0</span>);</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">default</span>: <span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> DefWindowProc(hwnd, uMsg, wParam, lParam);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;Windows 窗口的消息常量便是以 <code>WM_</code> 开头的常量值。</p>
+<p>&emsp;&emsp;我们使用了 switch ，当 uMsg 为 <code>WM_LBUTTONDOWN</code> （鼠标左键按下）时弹出一个提示框，来看看效果吧：</p>
+<p><img src="https://image.ibb.co/kJsGHx/image.png" alt="Window"></p>
+<p>&emsp;&emsp;成功！</p>
+<p>&emsp;&emsp;完整的窗口代码在 Github ，点这里前往：<a href="https://github.com/KsGin/LearnDirectX/blob/master/A-Win32-Window/main.cpp" target="_blank" rel="noopener">A Win32 Window</a></p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/14/【OpenGL】Breakout-4-精灵/" rel="next" title="【OpenGL】Breakout-4-精灵">
+                <i class="fa fa-chevron-left"></i> 【OpenGL】Breakout-4-精灵
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/15/Combination-Sum-IV/" rel="prev" title="Combination-Sum-IV">
+                Combination-Sum-IV <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-5"><a class="nav-link" href="#Windows-窗口"><span class="nav-number">1.</span> <span class="nav-text">Windows 窗口</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Windows-消息机制"><span class="nav-number">2.</span> <span class="nav-text">Windows 消息机制</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建一个-Windows-窗口"><span class="nav-number">3.</span> <span class="nav-text">创建一个 Windows 窗口</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#Windows-程序入口"><span class="nav-number">3.1.</span> <span class="nav-text">Windows 程序入口</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#设计-Windows-类"><span class="nav-number">3.2.</span> <span class="nav-text">设计 Windows 类</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#注册窗口类"><span class="nav-number">3.3.</span> <span class="nav-text">注册窗口类</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#创建窗口"><span class="nav-number">3.4.</span> <span class="nav-text">创建窗口</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#窗口更新"><span class="nav-number">3.5.</span> <span class="nav-text">窗口更新</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#消息处理"><span class="nav-number">3.6.</span> <span class="nav-text">消息处理</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】1-A-Empty-Window',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

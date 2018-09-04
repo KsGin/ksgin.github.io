@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;上一篇文章中我们介绍了 交换链，设备，设备上下文 等等名词，并成功创建了他们，这篇中我们将和学习 OpenGL 时一样去使用三个顶点来绘制一个三角形。 &amp;emsp;&amp;emsp;这篇中将要介绍的则是 ID3D11Buffer（缓冲） ，ID3D11VertexShader(顶点着色器) 和 ID3D11PixelShader(像素着色器) 这几个东西，我们将顶点数组构图，使用">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】3-D3D三角形">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/18/【DirectX】3-D3D三角形/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;上一篇文章中我们介绍了 交换链，设备，设备上下文 等等名词，并成功创建了他们，这篇中我们将和学习 OpenGL 时一样去使用三个顶点来绘制一个三角形。 &amp;emsp;&amp;emsp;这篇中将要介绍的则是 ID3D11Buffer（缓冲） ，ID3D11VertexShader(顶点着色器) 和 ID3D11PixelShader(像素着色器) 这几个东西，我们将顶点数组构图，使用">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://image.ibb.co/mv9wqH/image.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.283Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】3-D3D三角形">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;上一篇文章中我们介绍了 交换链，设备，设备上下文 等等名词，并成功创建了他们，这篇中我们将和学习 OpenGL 时一样去使用三个顶点来绘制一个三角形。 &amp;emsp;&amp;emsp;这篇中将要介绍的则是 ID3D11Buffer（缓冲） ，ID3D11VertexShader(顶点着色器) 和 ID3D11PixelShader(像素着色器) 这几个东西，我们将顶点数组构图，使用">
+<meta name="twitter:image" content="https://image.ibb.co/mv9wqH/image.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】3-D3D三角形 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/18/【DirectX】3-D3D三角形/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】3-D3D三角形</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-18T13:28:14+08:00">2018-03-18</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;&emsp;上一篇文章中我们介绍了 <strong>交换链</strong>，<strong>设备</strong>，<strong>设备上下文</strong> 等等名词，并成功创建了他们，这篇中我们将和学习 OpenGL 时一样去使用三个顶点来绘制一个三角形。</p>
+<p>&emsp;&emsp;这篇中将要介绍的则是 <code>ID3D11Buffer（缓冲）</code> ，<code>ID3D11VertexShader(顶点着色器)</code> 和 <code>ID3D11PixelShader(像素着色器)</code> 这几个东西，我们将顶点数组构图，使用着色器填色。（事实上和我们的 OpenGL 基本一样）</p>
+<a id="more"></a>
+<p>&emsp;&emsp;在 OpenGL 中我们使用 glm 数学库（<a href="https://glm.g-truc.net/" target="_blank" rel="noopener">OpenGL Mathematics</a>），而在 DirectX 中则是使用 XM 库（<a href="">DirectXMath</a>）。首先定义一个三角形的顶点：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Vertex</span> &#123;</span>				<span class="comment">// 定义一个顶点结构体，暂时就一个坐标属性</span></span><br><span class="line">	DirectX::XMFLOAT3 pos;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Vertex vertices[] =			<span class="comment">// 顶点数组</span></span><br><span class="line">&#123;</span><br><span class="line">    DirectX::XMFLOAT3(<span class="number">0.0f</span>, <span class="number">0.3f</span>, <span class="number">0.3f</span>),</span><br><span class="line">    DirectX::XMFLOAT3(<span class="number">0.3f</span>, <span class="number">-0.3f</span>, <span class="number">0.3f</span>),</span><br><span class="line">    DirectX::XMFLOAT3(<span class="number">-0.3f</span>, <span class="number">-0.3f</span>, <span class="number">0.3f</span>),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在使用 <code>D3D11_BUFFER_DESC</code> 创建定点缓冲描述，</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 缓存信息描述</span></span><br><span class="line">D3D11_BUFFER_DESC vertexBufferDesc;</span><br><span class="line">ZeroMemory(&amp;vertexBufferDesc, <span class="keyword">sizeof</span>(vertexBufferDesc));</span><br><span class="line">vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;		<span class="comment">// 默认使用</span></span><br><span class="line">vertexBufferDesc.ByteWidth = <span class="keyword">sizeof</span>(Vertex) * <span class="number">3</span>;	<span class="comment">// 大小（我们有三个顶点）</span></span><br><span class="line">vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	<span class="comment">// Bind</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;创建 <code>D3D11_SUBRESOURCE_DATA</code> ：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">D3D11_SUBRESOURCE_DATA verticesSourceData;</span><br><span class="line">ZeroMemory(&amp;verticesSourceData, <span class="keyword">sizeof</span>(D3D11_SUBRESOURCE_DATA));</span><br><span class="line">verticesSourceData.pSysMem = vertices;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后定义 <code>ID3D11Buffer *pVertexBufferObject = nullptr;</code> 将他初始化，接下来使用我们的设备对象来创建一个缓冲：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pDevice-&gt;CreateBuffer(&amp;vertexBufferDesc, &amp;verticesSourceData, &amp;pVertexBufferObject);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这几段代码就是为了创建缓冲而来。</p>
+<p>&emsp;&emsp;在 OpenGL 中，我们现在应该去使用一个 VertexArraysObject（VAO）来描述这个缓冲，但是在 DirectX 中右上下文设备的存在，我们直接使用上下文：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">UINT stride = <span class="keyword">sizeof</span>(Vertex);</span><br><span class="line">UINT offset = <span class="number">0</span>;</span><br><span class="line">pImmediateContext-&gt;IASetVertexBuffers(<span class="number">0</span>, <span class="number">1</span>, &amp;pVertexBufferObject, &amp;stride, &amp;offset);</span><br><span class="line">pImmediateContext-&gt;IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们使用立即上下文对象 <code>pImmediateContext</code> 来接手这一段顶点数据缓冲。现在你如果直接在主循环里绘制的话，会得到一个消息：<code>A Vertex Shader is always required when drawing, but none is currently bound.</code></p>
+<p>因此我们在绘制的时候必须为其配置着色器程序。</p>
+<p>&emsp;&emsp;与 DirectX 配套的着色器程序语言叫做 <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/bb509561%28v=vs.85%29.aspx" target="_blank" rel="noopener">HLSL（High Level  Shading Language）</a>，它也是使用文本文件来写，然后在 DirectX 代码中编译。首先我们来放两个最简单的着色器代码，顶点着色器和像素着色器（对应 OpenGL 中的片段着色器）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//triangle.vs 顶点着色器</span></span><br><span class="line">float4 Main( float4 Pos : POSITION ) : SV_POSITION</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> Pos;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//triangle.ps 像素着色器</span></span><br><span class="line">float4 Main( float4 Pos : SV_POSITION ) : SV_TARGET</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> float4( <span class="number">1.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span> );    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;相比而言，HLSL 的代码看起来更简单一点。我们直接定义了 Main 方法（<strong>需要注意的是 hlsl 的入口方法并非固定，当你启动编译的时候需要指定入口方法，也就是说是由你决定命名的</strong>）。在这里需要看一下 <code>SV_POSITION</code> 和 <code>POSITION</code> 以及 <code>SV_TARGET</code> 这三个变量。<code>SV_POSITION</code> 和 <code>POSITION</code> 无疑都是用来描述位置坐标的标识，而区别是 <code>SV_POSITION</code> 用来代表经过顶点着色器变换后的坐标。SV是Systems Value的简写，在<code>SV_POSITION</code>的情况下，如果它是绑定在一个从顶点着色器输出的数据结构上的话，意味着这个输出的数据结构包含了最终的转换过的，将用于光栅器的顶点坐标。</p>
+<p>&emsp;&emsp;也就是说，顶点着色器接收未经处理的原始坐标，在顶点着色器中处理后送给像素着色器（虽然这个例子上我们并未处理）。然后 <code>SV_TARGET</code> 标识则是这个函数返回一个传递给下一阶段的值（也就是最终的OutPut Merger 的颜色值）。</p>
+<p>&emsp;&emsp;如果需要了解更多的 HLSL 知识，可以去 MSDN 看一下（MSDN 是所有 Windows 程序员要翻烂的地方）。</p>
+<p>&emsp;&emsp;接下来，我们对这两个着色器进行编译：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ID3D10Blob* pErrorMessage = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D10Blob* pVertexShaderBlob = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D10Blob* pPixelShaderBlob = <span class="literal">nullptr</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;首先定义顶点着色器 Blob 对象和像素着色器 Blob 对象以及用来查错的对象。之后调用 <code>D3DX11CompileFromFile</code> 来进行编译，先来看看这个方法的参数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">HRESULT <span class="title">D3DX11CompileFromFile</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">  _In_        LPCTSTR            pSrcFile,	<span class="comment">// 源文件</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_  <span class="keyword">const</span> D3D10_SHADER_MACRO *pDefines,  <span class="comment">// 可选项 为 NULL </span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_        LPD3D10INCLUDE     pInclude,  <span class="comment">// NULL</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_        LPCSTR             pFunctionName, <span class="comment">// 入口函数名称</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_        LPCSTR             pProfile,  <span class="comment">// 配置信息 （ps_x_x 像素 ,vs_x_x 顶点）</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_        UINT               Flags1,  <span class="comment">// 参数配置</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_        UINT               Flags2,  <span class="comment">// 参数配置</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _In_        ID3DX11ThreadPump  *pPump,  <span class="comment">// NULL </span></span></span></span><br><span class="line"><span class="function"><span class="params">  _Out_       ID3D10Blob         **ppShader,  <span class="comment">// shader 对象</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _Out_       ID3D10Blob         **ppErrorMsgs, <span class="comment">// 错误信息对象</span></span></span></span><br><span class="line"><span class="function"><span class="params">  _Out_       HRESULT            *pHResult  <span class="comment">//NULL</span></span></span></span><br><span class="line"><span class="function"><span class="params">)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;具体使用如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 编译顶点着色器</span></span><br><span class="line">hr = D3DX11CompileFromFile(<span class="string">"./triangle.vs"</span>, <span class="literal">nullptr</span>, <span class="literal">nullptr</span>, <span class="string">"Main"</span>, <span class="string">"vs_5_0"</span>, D3DCOMPILER_STRIP_DEBUG_INFO , <span class="number">0</span>, <span class="literal">nullptr</span>, &amp;pVertexShaderBlob, &amp;pErrorMessage, <span class="literal">nullptr</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	<span class="keyword">if</span> (pErrorMessage) MessageBox(<span class="literal">NULL</span>, <span class="keyword">static_cast</span>&lt;CHAR*&gt;(pErrorMessage-&gt;GetBufferPointer()), <span class="string">"Error"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">else</span> MessageBox(<span class="literal">NULL</span>, <span class="string">"Triangle.vs File Not Found"</span>, <span class="string">"Error"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 编译像素着色器</span></span><br><span class="line">hr = D3DX11CompileFromFile(<span class="string">"./triangle.ps"</span>, <span class="literal">nullptr</span>, <span class="literal">nullptr</span>, <span class="string">"Main"</span>, <span class="string">"ps_5_0"</span>, D3DCOMPILER_STRIP_DEBUG_INFO , <span class="number">0</span>, <span class="literal">nullptr</span>, &amp;pPixelShaderBlob, &amp;pErrorMessage, <span class="literal">nullptr</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	<span class="keyword">if</span> (pErrorMessage) MessageBox(<span class="literal">NULL</span>, <span class="keyword">static_cast</span>&lt;CHAR*&gt;(pErrorMessage-&gt;GetBufferPointer()), <span class="string">"Error"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">else</span> MessageBox(<span class="literal">NULL</span>, <span class="string">"Triangle.vs File Not Found"</span>, <span class="string">"Error"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在编译成功后，我们使用设备对象来创建顶点着色器和像素着色器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">hr = pDevice-&gt;CreateVertexShader(pVertexShaderBlob-&gt;GetBufferPointer(), pVertexShaderBlob-&gt;GetBufferSize(), <span class="literal">nullptr</span>, &amp;pVertexShader);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">NULL</span>, <span class="string">"ERROR::CreateVertexShader"</span>, <span class="string">"Error"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line">hr = pDevice-&gt;CreatePixelShader(pPixelShaderBlob-&gt;GetBufferPointer(), pPixelShaderBlob-&gt;GetBufferSize(), <span class="literal">nullptr</span>, &amp;pPixelShader);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">NULL</span>, <span class="string">"ERROR::CreateVertexShader"</span>, <span class="string">"Error"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在顶点着色器中，我们使用了 <code>POSITION</code> ，在 DirectX 代码中创建一个 <code>InputLayout</code> 来描述 <code>input-assembler</code> 阶段的数据。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">D3D11_INPUT_ELEMENT_DESC layout[] = &#123; &#123; <span class="string">"POSITION"</span>, <span class="number">0</span>, DXGI_FORMAT_R32G32B32_FLOAT, <span class="number">0</span>, <span class="number">0</span>, D3D11_INPUT_PER_VERTEX_DATA, <span class="number">0</span> &#125; &#125;;</span><br><span class="line"><span class="keyword">const</span> UINT numElements = ARRAYSIZE( layout );</span><br><span class="line">hr = pDevice-&gt;CreateInputLayout(layout, numElements, pVertexShaderBlob-&gt;GetBufferPointer(), pVertexShaderBlob-&gt;GetBufferSize(), &amp;pInputLayout);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">NULL</span>, <span class="string">"ERROR::CreateInputLayout"</span>, <span class="string">"Error"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line">pImmediateContext-&gt;IASetInputLayout(pInputLayout);	<span class="comment">// 设置</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;DX 中多数 API 都有着及其繁杂的参数，限于篇幅在这里写者并没有全部列出来，最详细的信息还是首推 MSDN （话说我推荐过多少次了）。</p>
+<p>&emsp;&emsp;这些都结束后，我们在主循环里绘制它：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MSG msg;</span><br><span class="line">ZeroMemory(&amp;msg, <span class="keyword">sizeof</span>(MSG));</span><br><span class="line"><span class="keyword">while</span> (msg.message != WM_QUIT) &#123;</span><br><span class="line">	<span class="keyword">float</span> color[] = &#123; <span class="number">0.1f</span> , <span class="number">0.2</span> , <span class="number">0.5f</span> , <span class="number">1.0f</span> &#125;;</span><br><span class="line">	pImmediateContext-&gt;ClearRenderTargetView(pRenderTargetView, color);</span><br><span class="line">	pImmediateContext-&gt;VSSetShader(pVertexShader, <span class="literal">nullptr</span>, <span class="number">0</span>);	<span class="comment">//set vs</span></span><br><span class="line">	pImmediateContext-&gt;PSSetShader(pPixelShader, <span class="literal">nullptr</span>, <span class="number">0</span>);	<span class="comment">//set ps</span></span><br><span class="line">	pImmediateContext-&gt;Draw(<span class="number">3</span>, <span class="number">0</span>);		<span class="comment">//draw</span></span><br><span class="line">	pSwapChain-&gt;Present(<span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (PeekMessage(&amp;msg, <span class="literal">nullptr</span>, <span class="number">0</span>, <span class="number">0</span>, PM_REMOVE)) &#123;</span><br><span class="line">		TranslateMessage(&amp;msg);</span><br><span class="line">		DispatchMessage(&amp;msg);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果代码没有错的话应该可以看到这样一个效果：</p>
+<p><img src="https://image.ibb.co/mv9wqH/image.png" alt="Triangle"></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/18/Unique-Paths/" rel="next" title="Unique-Paths">
+                <i class="fa fa-chevron-left"></i> Unique-Paths
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/19/Single-Number-II/" rel="prev" title="Single-Number-II">
+                Single-Number-II <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】3-D3D三角形',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;之前两篇种我们简略的实现了基本地图的构造和摄像机的移动，这篇文章主要着重于摄像机的视角移动，和视角移动带来的摄像机移动的几个问题。 &amp;emsp;&amp;emsp;我们之前摄像机的移动是直接对cameraMat（即view矩阵）进行 translate 操作，是直接参照坐标轴实现的，即向前就是想z轴负方向移动，左就是x轴负方向，然而我们需要实现的是向前是向摄像机方向的正前方移动。所">
+<meta name="keywords" content="Computer graphics,OpenGL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【OpenGL】FPS模拟-3">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/03/【OpenGL】FPS模拟-3/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;之前两篇种我们简略的实现了基本地图的构造和摄像机的移动，这篇文章主要着重于摄像机的视角移动，和视角移动带来的摄像机移动的几个问题。 &amp;emsp;&amp;emsp;我们之前摄像机的移动是直接对cameraMat（即view矩阵）进行 translate 操作，是直接参照坐标轴实现的，即向前就是想z轴负方向移动，左就是x轴负方向，然而我们需要实现的是向前是向摄像机方向的正前方移动。所">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.learnopengl.com/img/getting-started/camera_pitch_yaw_roll.png">
+<meta property="og:image" content="http://www.learnopengl.com/img/getting-started/camera_triangle.png">
+<meta property="og:image" content="http://www.learnopengl.com/img/getting-started/camera_pitch.png">
+<meta property="og:image" content="http://www.learnopengl.com/img/getting-started/camera_yaw.png">
+<meta property="og:image" content="https://image.ibb.co/kAQGHn/Screenshot_1.png">
+<meta property="og:image" content="https://image.ibb.co/kAQGHn/Screenshot_1.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.296Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【OpenGL】FPS模拟-3">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;之前两篇种我们简略的实现了基本地图的构造和摄像机的移动，这篇文章主要着重于摄像机的视角移动，和视角移动带来的摄像机移动的几个问题。 &amp;emsp;&amp;emsp;我们之前摄像机的移动是直接对cameraMat（即view矩阵）进行 translate 操作，是直接参照坐标轴实现的，即向前就是想z轴负方向移动，左就是x轴负方向，然而我们需要实现的是向前是向摄像机方向的正前方移动。所">
+<meta name="twitter:image" content="http://www.learnopengl.com/img/getting-started/camera_pitch_yaw_roll.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【OpenGL】FPS模拟-3 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/03/【OpenGL】FPS模拟-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【OpenGL】FPS模拟-3</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-03T16:44:46+08:00">2018-03-03</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;&emsp;之前两篇种我们简略的实现了基本地图的构造和摄像机的移动，这篇文章主要着重于摄像机的视角移动，和视角移动带来的摄像机移动的几个问题。</p>
+<p>&emsp;&emsp;我们之前摄像机的移动是直接对cameraMat（即view矩阵）进行 translate 操作，是直接参照坐标轴实现的，即向前就是想z轴负方向移动，左就是x轴负方向，然而我们需要实现的是向前是向摄像机方向的正前方移动。所以需要修改。</p>
+<p>&emsp;&emsp;我们假设的游戏角色是在xz平面上移动的，如果以摄像机前方作为正方向，如何保证当摄像机面向正上方时W键不会使得摄像机飞到天上…等等需要注意的问题。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;在开始写代码之前，我们需要了解一个概念：<a href="https://zh.wikipedia.org/wiki/欧拉角" target="_blank" rel="noopener">欧拉角(Euler Angle)</a></p>
+<blockquote>
+<p>&emsp;&emsp;欧拉角(Euler Angle)是表示3D空间中可以表示任何旋转的三个值，由莱昂哈德·欧拉在18世纪提出。有三种欧拉角：俯仰角(Pitch)、偏航角(Yaw)和滚转角(Roll)，下面的图片展示了它们的含义：</p>
+<p><img src="http://www.learnopengl.com/img/getting-started/camera_pitch_yaw_roll.png" alt="img"></p>
+<p>&emsp;&emsp;<strong>俯仰角</strong>是描述我们如何往上和往下看的角，它在第一张图中表示。第二张图显示了<strong>偏航角</strong>，偏航角表示我们往左和往右看的大小。<strong>滚转角</strong>代表我们如何翻滚摄像机。每个欧拉角都有一个值来表示，把三个角结合起来我们就能够计算3D空间中任何的旋转了。</p>
+</blockquote>
+<p>&emsp;&emsp;在这次的代码中我们将进行类FPS摄像机视角的移动，即对 Pitch 和 Yaw 角的转化。我们需要将这两个角度转换成三维空间里具体的方向向量。</p>
+<blockquote>
+<p>&emsp;&emsp;用一个给定的俯仰角和偏航角，我们可以把它们转换为一个代表新的方向向量的3D向量。俯仰角和偏航角转换为方向向量的处理需要一些三角学知识，我们以最基本的情况开始：</p>
+<p><img src="http://www.learnopengl.com/img/getting-started/camera_triangle.png" alt="img"></p>
+<p>&emsp;&emsp;如果我们把斜边边长定义为1，我们就能知道邻边的长度是cos x/h=cos x/1=cos xcos⁡ x/h=cos⁡ x/1=cos⁡ x，它的对边是sin y/h=sin y/1=sin ysin⁡ y/h=sin⁡ y/1=sin⁡ y。这样我们获得了能够得到x和y方向的长度的公式，它们取决于所给的角度。我们使用它来计算方向向量的元素：</p>
+<p><img src="http://www.learnopengl.com/img/getting-started/camera_pitch.png" alt="img"></p>
+<p>&emsp;&emsp;这个三角形看起来和前面的三角形很像，所以如果我们想象自己在xz平面上，正望向y轴，我们可以基于第一个三角形计算长度/y方向的强度(我们往上或往下看多少)</p>
+<p>&emsp;&emsp;看看我们是否能够为偏航角找到需要的元素：</p>
+<p><img src="http://www.learnopengl.com/img/getting-started/camera_yaw.png" alt="img"></p>
+<p>&emsp;&emsp;就像俯仰角一样我们可以看到x元素取决于cos(偏航角)的值，z值同样取决于偏航角的正弦值。把这个加到前面的值中。</p>
+</blockquote>
+<p>&emsp;&emsp;由上边的两个图可得，我们的方向向量的 X 轴坐标取决于 cos(yaw) 和 cos(pitch) ，Y 轴取决于 sin(pitch) ，Z轴取决于 cos(pitch) 和 sin(yaw) 。</p>
+<p>&emsp;&emsp;此时我们将之前的代码修改，重构 View 矩阵：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">vec3 <span class="title">cameraPos</span><span class="params">(<span class="number">0.0f</span>, <span class="number">5.0f</span>, <span class="number">20.0f</span>)</span></span>;</span><br><span class="line"><span class="function">vec3 <span class="title">cameraFront</span><span class="params">(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-20.0f</span>)</span></span>;</span><br><span class="line"><span class="function">vec3 <span class="title">cameraUp</span><span class="params">(<span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;定义摄像机坐标 cameraPos ，摄像机朝向 cameraFront 和看的方向 cameraUp 三个向量，对 cameraFront 修改以实现视角的旋转。</p>
+<p>&emsp;&emsp;我们首先定义 pitch，yaw 两个变量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> pitch = <span class="number">0.0</span>, yaw = <span class="number">0.0</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;pitch 为绕 X 轴旋转的角，即视角的上下旋转，应该由屏幕坐标系 Y 轴决定， yaw 为绕 Y 轴旋转的角，即视角左右旋转，由屏幕坐标系的  X 轴决定。我们将鼠标在 Y 轴的偏移量作为 pitch 增量， X 轴偏移量作为 yaw 增量。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pitch += (preY - curPosY) * <span class="number">0.3</span>; <span class="comment">//乘以0.3的原因是降低点旋转速度</span></span><br><span class="line">yaw += (curPosX - preX) * <span class="number">0.3</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;得到了 pitch 和 yaw 值之后，我们便可以直接赋值了，由之前计算的</p>
+<blockquote>
+<p>&emsp;&emsp;我们的方向向量的 X 轴坐标取决于 cos(yaw) 和 cos(pitch) ，Y 轴取决于 sin(pitch) ，Z轴取决于 cos(pitch) 和 sin(yaw) 。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cameraFront = normalize(</span><br><span class="line">       	vec3(<span class="built_in">cos</span>(radians(pitch))  * <span class="built_in">cos</span>(radians(yaw)),  <span class="comment">//x</span></span><br><span class="line">           <span class="built_in">sin</span>(radians(pitch)), 							<span class="comment">//y</span></span><br><span class="line">           <span class="built_in">cos</span>(radians(pitch)) * <span class="built_in">sin</span>(radians(yaw)))		<span class="comment">//z</span></span><br><span class="line">   );</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;得到了摄像机方向之后，直接使用 lookAt 方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mat4 View = lookAt(cameraPos, cameraFront + cameraPos, cameraUp);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;视角旋转搞定，以下是效果（点击图片进入播放页面）：</p>
+<p><a href="https://youtu.be/ve9mjJlAauc" target="_blank" rel="noopener"><img src="https://image.ibb.co/kAQGHn/Screenshot_1.png" alt="图片"></a></p>
+<p>&emsp;&emsp;视角的旋转成功了，但是带来的问题还没解决，即移动问题，我们需要让前后左右的位移与我们的面向有关而不是固定在坐标轴上。前后的处理比较简单，直接使用 cameraFront （摄像机方向）乘以速度就可以了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)</span><br><span class="line">&#123;</span><br><span class="line">	cameraPos += speed * vec3(cameraFront.x , <span class="number">0.0f</span> , cameraFront.z);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)</span><br><span class="line">&#123;</span><br><span class="line">	cameraPos += -speed * vec3(cameraFront.x, <span class="number">0.0f</span>, cameraFront.z);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;请注意看，我们没有直接使用 cameraFront 这个向量，而是使用它的 x 值和 z 值重新构造了一个向量，这个又是为何呢？</p>
+<p>&emsp;&emsp;在前边我们提出了当摄像机方向向上偏或者向下偏的时候如何处理使得我们的摄像机不会向上或者向下位移的问题，就是在这里解决的，我们忽略了摄像机的方向向量种的 Y 分量。</p>
+<p>&emsp;&emsp;左右移动（A ，D）则是向摄像机方向与 Y  轴方向形成的面的法线两边移动，使用 glm::cross 方法求法线方向向量，然后乘以速度即可，同样忽略高度。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)</span><br><span class="line">&#123;</span><br><span class="line">	cameraPos += -speed * cross(vec3(cameraFront.x, <span class="number">0.0f</span>, cameraFront.z), cameraUp);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)</span><br><span class="line">&#123;</span><br><span class="line">	cameraPos += speed * cross(vec3(cameraFront.x, <span class="number">0.0f</span>, cameraFront.z), cameraUp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这时，我们基本已经可以实现自由移动了。不过还有一些细节问题。</p>
+<p>&emsp;&emsp;首先是旋转，在进行 pitch 角旋转的时候，由于我们向上或者向下看不会看到背后（当 pitch &gt; 90 或者 pitch &lt; -90），所以需要对 pitch 的值进行限制。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pitch = max(<span class="number">-89.0</span> , min(<span class="number">89.0</span>, pitch)); <span class="comment">//pitch 在-89到89范围内</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;还有是鼠标范围，我们将鼠标设置为在窗口循环出现，即可以无限的向一个方向转。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//鼠标在窗口内循环</span></span><br><span class="line"><span class="keyword">if</span> (curPosX &lt; <span class="number">0</span> || curPosX &gt; <span class="number">1024</span> || curPosY &lt; <span class="number">0</span> || curPosY &gt; <span class="number">768</span>) &#123;</span><br><span class="line">	<span class="keyword">if</span> (curPosX &lt;= <span class="number">0</span>) curPosX = preX = <span class="number">1023</span>;</span><br><span class="line">	<span class="keyword">if</span> (curPosX &gt;= <span class="number">1024</span>) curPosX = preX = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">if</span> (curPosY &lt;= <span class="number">0</span>) curPosY = preY = <span class="number">767</span>;</span><br><span class="line">	<span class="keyword">if</span> (curPosY &gt;= <span class="number">768</span>) curPosY = preY = <span class="number">1</span>;</span><br><span class="line">	glfwSetCursorPos(window, curPosX, curPosY);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这样我们可以看到，当鼠标光标从窗口最右边消失后会从最左边再进来，我们依旧可以向右旋转视角。但是这样难免有些不美观，在 FPS 视角的游戏中也没有显示鼠标位置的，所以我们调用 windows api 隐藏鼠标。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//隐藏鼠标显示</span></span><br><span class="line">ShowCursor(<span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最终效果如下（点击图片进入Youtube查看视频）：</p>
+<p><a href="https://youtu.be/sEubooUPXzg" target="_blank" rel="noopener"><img src="https://image.ibb.co/kAQGHn/Screenshot_1.png" alt="img"></a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/OpenGL/" rel="tag"> OpenGL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/03/Array-Nesting/" rel="next" title="Array-Nesting">
+                <i class="fa fa-chevron-left"></i> Array-Nesting
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/04/Rabbits-in-Forest/" rel="prev" title="Rabbits-in-Forest">
+                Rabbits-in-Forest <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【OpenGL】FPS模拟-3',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

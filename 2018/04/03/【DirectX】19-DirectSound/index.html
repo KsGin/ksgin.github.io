@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="教程地址Tutorial 14: Direct Sound 学习记录&amp;emsp;&amp;emsp;这篇文章中，我们将主要介绍 DX 中的音频输入 DirectSound 。与之前一样，这篇文章主要简单的介绍它的使用流程和完成一个播放的小例子。在此之前，如果对音频格式不太了解的话，可以看这里：维基百科：音频格式">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】19-DirectSound">
+<meta property="og:url" content="https://blog.ksgin.com/2018/04/03/【DirectX】19-DirectSound/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="教程地址Tutorial 14: Direct Sound 学习记录&amp;emsp;&amp;emsp;这篇文章中，我们将主要介绍 DX 中的音频输入 DirectSound 。与之前一样，这篇文章主要简单的介绍它的使用流程和完成一个播放的小例子。在此之前，如果对音频格式不太了解的话，可以看这里：维基百科：音频格式">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://image.ibb.co/j759mc/Wave_format.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.280Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】19-DirectSound">
+<meta name="twitter:description" content="教程地址Tutorial 14: Direct Sound 学习记录&amp;emsp;&amp;emsp;这篇文章中，我们将主要介绍 DX 中的音频输入 DirectSound 。与之前一样，这篇文章主要简单的介绍它的使用流程和完成一个播放的小例子。在此之前，如果对音频格式不太了解的话，可以看这里：维基百科：音频格式">
+<meta name="twitter:image" content="https://image.ibb.co/j759mc/Wave_format.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】19-DirectSound | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/04/03/【DirectX】19-DirectSound/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】19-DirectSound</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-03T13:33:14+08:00">2018-04-03</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="教程地址"><a href="#教程地址" class="headerlink" title="教程地址"></a>教程地址</h4><p><a href="http://www.rastertek.com/dx11tut14.html" target="_blank" rel="noopener"><strong>Tutorial 14: Direct Sound</strong></a></p>
+<h4 id="学习记录"><a href="#学习记录" class="headerlink" title="学习记录"></a>学习记录</h4><p>&emsp;&emsp;这篇文章中，我们将主要介绍 DX 中的音频输入 DirectSound 。与之前一样，这篇文章主要简单的介绍它的使用流程和完成一个播放的小例子。在此之前，如果对音频格式不太了解的话，可以看这里：<a href="https://zh.wikipedia.org/wiki/%E9%9F%B3%E9%A2%91%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F" target="_blank" rel="noopener">维基百科：音频格式</a></p>
+<a id="more"></a>
+<p>&emsp;&emsp;在使用 DirectSound 之前，需要包含 <code>dsound.h</code> 头文件以及链接 <code>dsound.lib</code> ，<code>dxguid.lib</code> ，<code>winmm.lib</code> 等库，如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;dsound.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"dsound.lib"</span>)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"dxguid.lib"</span>)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"winmm.lib"</span>)</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们这篇文章将会播放一个 .wav 格式的语音文件，大致分为以下步骤：</p>
+<ol>
+<li>初始化 DirectSound 设备以及主缓冲 DirectSoundBuffer</li>
+<li>读取 .wav 文件并校验</li>
+<li>使用文件信息配置辅助缓冲</li>
+<li>播放 DirectSoundBuffer</li>
+</ol>
+<p>&emsp;&emsp;来试试看代码吧：</p>
+<h5 id="初始化-DirectSound-设备以及主缓冲-DirectSoundBuffer"><a href="#初始化-DirectSound-设备以及主缓冲-DirectSoundBuffer" class="headerlink" title="初始化 DirectSound 设备以及主缓冲 DirectSoundBuffer"></a>初始化 DirectSound 设备以及主缓冲 DirectSoundBuffer</h5><p>&emsp;&emsp;首先创建 DirectSound 指针变量且设置其属性：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">IDirectSound8 * pSoundDevice = <span class="literal">nullptr</span>;</span><br><span class="line">hr = DirectSoundCreate8(<span class="literal">nullptr</span>, &amp;pSoundDevice, <span class="literal">nullptr</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::CreateSoundDevice"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line">hr = pSoundDevice-&gt;SetCooperativeLevel(hWnd, DSSCL_PRIORITY);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::SetCooperativeLevel"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个和 DirectInput 还是比较像的。初始化好设备后，我们可以设置缓冲描述，并使用设备创建缓冲：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">DSBUFFERDESC bd;</span><br><span class="line">ZeroMemory(&amp;bd, <span class="keyword">sizeof</span>(bd));</span><br><span class="line">bd.dwSize = <span class="keyword">sizeof</span>(DSBUFFERDESC);</span><br><span class="line">bd.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLVOLUME;</span><br><span class="line">bd.guid3DAlgorithm = GUID_NULL;</span><br><span class="line"></span><br><span class="line">IDirectSoundBuffer *pSoundPrimaryBuffer = <span class="literal">nullptr</span>;</span><br><span class="line">hr = pSoundDevice-&gt;CreateSoundBuffer(&amp;bd, &amp;pSoundPrimaryBuffer, <span class="literal">nullptr</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::CreatePrimaryBuffer"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在，我们可以配置这个缓冲的格式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">WAVEFORMATEX wf;</span><br><span class="line">ZeroMemory(&amp;wf, <span class="keyword">sizeof</span>(wf));</span><br><span class="line">wf.wFormatTag = WAVE_FORMAT_PCM;</span><br><span class="line">wf.nSamplesPerSec = <span class="number">44100</span>;</span><br><span class="line">wf.wBitsPerSample = <span class="number">16</span>;</span><br><span class="line">wf.nChannels = <span class="number">2</span>;</span><br><span class="line">wf.nBlockAlign = wf.wBitsPerSample / <span class="number">8</span> * wf.nChannels;</span><br><span class="line">wf.nAvgBytesPerSec = wf.nSamplesPerSec * wf.nBlockAlign;</span><br><span class="line">wf.cbSize = <span class="number">0</span>;</span><br><span class="line">hr = pSoundPrimaryBuffer-&gt;SetFormat(&amp;wf);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::SoundPrimaryBuffer::SetFormat"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在这里我们创建了 WAV 文件的描述，并且将其设定为缓冲的格式。现在我们的基本缓冲对象就配置完了，用来存储音频信息的辅助缓冲会在读取和校验具体文件后才会进行。</p>
+<h5 id="读取-wav-文件并校验"><a href="#读取-wav-文件并校验" class="headerlink" title="读取 .wav 文件并校验"></a>读取 .wav 文件并校验</h5><p>&emsp;&emsp;在读取文件之前，我们需要创建一个音频的文件头结构体，以方便一会从 .wav 文件头中读取数据然后校验：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">WaveHeader</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">char</span> chunkId[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> chunkSize;</span><br><span class="line">	<span class="keyword">char</span> format[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">char</span> subChunkId[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> subChunkSize;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> audioFormat;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> numChannels;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> sampleRate;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> bytesPerSecond;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> blockAlign;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> bitsPerSample;</span><br><span class="line">	<span class="keyword">char</span> dataChunkId[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> dataSize;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这一个结构体可能比较复杂，可以参考<a href="https://zh.wikipedia.org/wiki/WAV" target="_blank" rel="noopener">维基百科：wav 文件格式</a> ，有详细介绍 wav 的文件头各个参数，如下图（来自维基百科）：</p>
+<p><img src="https://image.ibb.co/j759mc/Wave_format.png" alt="1"></p>
+<p>&emsp;&emsp;有了这个结构体，我们可以直接读取文件中的 Header 部分：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">INT error;</span><br><span class="line">FILE *filePtr = <span class="literal">nullptr</span>;</span><br><span class="line">UINT count;</span><br><span class="line">WaveHeader waveHeader;</span><br><span class="line"></span><br><span class="line">error = fopen_s(&amp;filePtr, <span class="string">"./sound.wav"</span>, <span class="string">"rb"</span>);</span><br><span class="line"><span class="keyword">if</span> (error) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::OpenWavFile"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">count = fread(&amp;waveHeader, <span class="keyword">sizeof</span>(waveHeader), <span class="number">1</span>, filePtr);</span><br><span class="line"><span class="keyword">if</span> (count != <span class="number">1</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::ReadWavFileHeader"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们使用 fread 从内存层面直接将数据赋值到了 waveHeader 上，然后现在可以根据 waveHeader 的各个信息判断是否满足我们的要求：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (waveHeader.chunkId[<span class="number">0</span>] != <span class="string">'R'</span> || waveHeader.chunkId[<span class="number">1</span>] != <span class="string">'I'</span> || waveHeader.chunkId[<span class="number">2</span>] != <span class="string">'F'</span> || waveHeader.chunkId[<span class="number">3</span>] != <span class="string">'F'</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::chunkId != RIFF"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (waveHeader.format[<span class="number">0</span>] != <span class="string">'W'</span> || waveHeader.format[<span class="number">1</span>] != <span class="string">'A'</span> || waveHeader.format[<span class="number">2</span>] != <span class="string">'V'</span> || waveHeader.format[<span class="number">3</span>] != <span class="string">'E'</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::format != WAVE"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (waveHeader.subChunkId[<span class="number">0</span>] != <span class="string">'f'</span> || waveHeader.subChunkId[<span class="number">1</span>] != <span class="string">'m'</span> || waveHeader.subChunkId[<span class="number">2</span>] != <span class="string">'t'</span> || waveHeader.subChunkId[<span class="number">3</span>] != <span class="string">' '</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::subChunkId != FMT"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (waveHeader.dataChunkId[<span class="number">0</span>] != <span class="string">'d'</span> || waveHeader.dataChunkId[<span class="number">1</span>] != <span class="string">'a'</span> || waveHeader.dataChunkId[<span class="number">2</span>] != <span class="string">'t'</span> || waveHeader.dataChunkId[<span class="number">3</span>] != <span class="string">'a'</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::dataChunkId != data"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (waveHeader.audioFormat != WAVE_FORMAT_PCM) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::audioFormat != PCM"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (waveHeader.numChannels != <span class="number">2</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::numChannels != 2"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (waveHeader.sampleRate != <span class="number">44100</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::sampleRate != 44100"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (waveHeader.bitsPerSample != <span class="number">16</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::bitsPerSample != 16"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果符合条件，我们就可以使用这个文件中的数据来创建一个存储信息的辅助缓冲区了。</p>
+<h5 id="使用文件信息配置辅助缓冲"><a href="#使用文件信息配置辅助缓冲" class="headerlink" title="使用文件信息配置辅助缓冲"></a>使用文件信息配置辅助缓冲</h5><p>&emsp;&emsp;首先我们将数据读出来：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">fseek(filePtr, <span class="keyword">sizeof</span>(waveHeader), SEEK_SET);</span><br><span class="line">UCHAR *waveData = <span class="keyword">new</span> UCHAR[waveHeader.dataSize];</span><br><span class="line">count = fread(waveData, <span class="number">1</span>, waveHeader.dataSize, filePtr);</span><br><span class="line"><span class="keyword">if</span> (count != waveHeader.dataSize) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::ReadSize != waveHeader.dataSize"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">error = fclose(filePtr);</span><br><span class="line"><span class="keyword">if</span> (error != <span class="number">0</span>) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::CloseFile"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用 fseek ，我们将文件指针定位到了 data 段的开始，然后将数据存入了 waveData 里。现在我们可以利用 waveData 创建一个临时缓冲：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">WAVEFORMATEX waveFormatEx;</span><br><span class="line">ZeroMemory(&amp;waveFormatEx, <span class="keyword">sizeof</span>(waveFormatEx));</span><br><span class="line">waveFormatEx.wFormatTag = WAVE_FORMAT_PCM;</span><br><span class="line">waveFormatEx.nSamplesPerSec = <span class="number">44100</span>;</span><br><span class="line">waveFormatEx.wBitsPerSample = <span class="number">16</span>;</span><br><span class="line">waveFormatEx.nChannels = <span class="number">2</span>;</span><br><span class="line">waveFormatEx.nBlockAlign = waveFormatEx.wBitsPerSample / <span class="number">8</span> * waveFormatEx.nChannels;</span><br><span class="line">waveFormatEx.nAvgBytesPerSec = waveFormatEx.nSamplesPerSec * waveFormatEx.nBlockAlign;</span><br><span class="line">waveFormatEx.cbSize = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">DSBUFFERDESC bufferDesc;</span><br><span class="line">ZeroMemory(&amp;bufferDesc, <span class="keyword">sizeof</span>(bufferDesc));</span><br><span class="line">bufferDesc.dwSize = <span class="keyword">sizeof</span>(DSBUFFERDESC);</span><br><span class="line">bufferDesc.dwFlags = DSBCAPS_CTRLVOLUME;</span><br><span class="line">bufferDesc.lpwfxFormat = &amp;waveFormatEx;</span><br><span class="line">bufferDesc.dwBufferBytes = waveHeader.dataSize;</span><br><span class="line">bufferDesc.guid3DAlgorithm = GUID_NULL;</span><br><span class="line"></span><br><span class="line">IDirectSoundBuffer *pSoundTmpBuffer = <span class="literal">nullptr</span>;</span><br><span class="line">hr = pSoundDevice-&gt;CreateSoundBuffer(&amp;bufferDesc, &amp;pSoundTmpBuffer, <span class="literal">nullptr</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::CreateSoundTmpBuffer"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们调用 <code>pSoundTmpBuffer</code> 的 <code>QueryInterface</code> 方法来创建辅助声音缓冲（在 dx 中，我们需要通过设备对象创建一个主缓冲。还需要至少一个用来存储声音信息的辅助缓冲，DirectSound 把辅助缓冲中的声音混合到主缓冲中）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">IDirectSoundBuffer8 *pSoundSecondaryBuffer = <span class="literal">nullptr</span>;</span><br><span class="line">hr = pSoundTmpBuffer-&gt;QueryInterface(IID_IDirectSoundBuffer8, <span class="keyword">reinterpret_cast</span>&lt;LPVOID*&gt;(&amp;pSoundSecondaryBuffer));</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::SoundTmpBuffer::QueryInterface"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在，我们有了我们的辅助缓冲对象，给它填充数据：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">UCHAR *bufferPtr = <span class="literal">nullptr</span>;</span><br><span class="line">ULONG bufferSize;</span><br><span class="line">hr = pSoundSecondaryBuffer-&gt;Lock(<span class="number">0</span>, waveHeader.dataSize, <span class="keyword">reinterpret_cast</span>&lt;LPVOID*&gt;(&amp;bufferPtr), &amp;bufferSize, <span class="literal">nullptr</span>, <span class="number">0</span>, <span class="number">0</span>);	<span class="comment">//Lock</span></span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::pSoundSecondaryBuffer::Lock"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">memcpy</span>(bufferPtr, waveData, waveHeader.dataSize);	<span class="comment">//copy</span></span><br><span class="line"></span><br><span class="line">hr = pSoundSecondaryBuffer-&gt;Unlock(bufferPtr, bufferSize, <span class="literal">nullptr</span>, <span class="number">0</span>);	<span class="comment">//UNLock</span></span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::pSoundSecondaryBuffer::UNLock"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">delete</span>[] waveData;</span><br><span class="line">waveData = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个时候已经可以进行播放了。</p>
+<h5 id="播放-DirectSoundBuffer"><a href="#播放-DirectSoundBuffer" class="headerlink" title="播放 DirectSoundBuffer"></a>播放 DirectSoundBuffer</h5><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">hr = pSoundSecondaryBuffer-&gt;SetCurrentPosition(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::pSoundSecondaryBuffer::SetCurrentPosition"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">hr = pSoundSecondaryBuffer-&gt;SetVolume(DSBVOLUME_MAX);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::pSoundSecondaryBuffer::SetVolume"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">hr = pSoundSecondaryBuffer-&gt;Play(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">	MessageBox(<span class="literal">nullptr</span>, <span class="string">"ERROR::pSoundSecondaryBuffer::Play"</span>, <span class="string">"ERROR"</span>, MB_OK);</span><br><span class="line">	<span class="keyword">return</span> hr;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;源代码：<a href="https://github.com/KsGin/DX11Tutorial/tree/master/DX11Tutorial-DirectSound" target="_blank" rel="noopener"><strong>DX11Tutorial-DirectSound</strong></a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/02/【CG】简单的图像后期处理3/" rel="next" title="【CG】简单的图像后期处理3">
+                <i class="fa fa-chevron-left"></i> 【CG】简单的图像后期处理3
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/03/Spiral-Matrix/" rel="prev" title="Spiral-Matrix">
+                Spiral-Matrix <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#教程地址"><span class="nav-number">1.</span> <span class="nav-text">教程地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学习记录"><span class="nav-number">2.</span> <span class="nav-text">学习记录</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#初始化-DirectSound-设备以及主缓冲-DirectSoundBuffer"><span class="nav-number">2.1.</span> <span class="nav-text">初始化 DirectSound 设备以及主缓冲 DirectSoundBuffer</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#读取-wav-文件并校验"><span class="nav-number">2.2.</span> <span class="nav-text">读取 .wav 文件并校验</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用文件信息配置辅助缓冲"><span class="nav-number">2.3.</span> <span class="nav-text">使用文件信息配置辅助缓冲</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#播放-DirectSoundBuffer"><span class="nav-number">2.4.</span> <span class="nav-text">播放 DirectSoundBuffer</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】19-DirectSound',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

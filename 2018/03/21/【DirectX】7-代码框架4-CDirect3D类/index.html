@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="教程地址Tutorial 3: Initializing DirectX 11 学习记录&amp;emsp;&amp;emsp;在之前的文章中，我们简单的将我们的框架下的 CInput 填充了以下，实现了 CKeyboard 和 CMouse 两个基础类。输入貌似就可以暂时这样了，现在我们来看输出。也就是我们 CSystem 类下的另一个 CGraphics 。这篇文章中要实现的是对于 D3D 系统函数的封装，将">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】7-代码框架4-CDirect3D类">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/21/【DirectX】7-代码框架4-CDirect3D类/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="教程地址Tutorial 3: Initializing DirectX 11 学习记录&amp;emsp;&amp;emsp;在之前的文章中，我们简单的将我们的框架下的 CInput 填充了以下，实现了 CKeyboard 和 CMouse 两个基础类。输入貌似就可以暂时这样了，现在我们来看输出。也就是我们 CSystem 类下的另一个 CGraphics 。这篇文章中要实现的是对于 D3D 系统函数的封装，将">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://image.ibb.co/cYudPc/image.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.288Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】7-代码框架4-CDirect3D类">
+<meta name="twitter:description" content="教程地址Tutorial 3: Initializing DirectX 11 学习记录&amp;emsp;&amp;emsp;在之前的文章中，我们简单的将我们的框架下的 CInput 填充了以下，实现了 CKeyboard 和 CMouse 两个基础类。输入貌似就可以暂时这样了，现在我们来看输出。也就是我们 CSystem 类下的另一个 CGraphics 。这篇文章中要实现的是对于 D3D 系统函数的封装，将">
+<meta name="twitter:image" content="https://image.ibb.co/cYudPc/image.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】7-代码框架4-CDirect3D类 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/21/【DirectX】7-代码框架4-CDirect3D类/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】7-代码框架4-CDirect3D类</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-21T17:40:42+08:00">2018-03-21</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="教程地址"><a href="#教程地址" class="headerlink" title="教程地址"></a>教程地址</h4><p><a href="http://www.rastertek.com/dx11tut03.html" target="_blank" rel="noopener">Tutorial 3: Initializing DirectX 11</a></p>
+<h4 id="学习记录"><a href="#学习记录" class="headerlink" title="学习记录"></a>学习记录</h4><p>&emsp;&emsp;在之前的文章中，我们简单的将我们的框架下的 <code>CInput</code> 填充了以下，实现了 <code>CKeyboard</code> 和 <code>CMouse</code> 两个基础类。输入貌似就可以暂时这样了，现在我们来看输出。也就是我们 <code>CSystem</code> 类下的另一个 <code>CGraphics</code> 。这篇文章中要实现的是对于 D3D 系统函数的封装，将其命名为 <code>CDirect3D</code> 。</p>
+<p>&emsp;&emsp;更新 <code>CDirect3D</code> 之后我们的框架如下：</p>
+<p><img src="https://image.ibb.co/cYudPc/image.png" alt="CDirect3D1"></p>
+<a id="more"></a>
+<p>&emsp;&emsp;之前我们实现了很多个类，但是都算是很简单的。而这一篇就比较复杂了，我们之前写过 dx 的初始化代码，也是大致清楚都需要做什么，先来看看这个类的声明。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CDirect3D</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	CDirect3D();</span><br><span class="line">	CDirect3D(CDirect3D&amp; cd);</span><br><span class="line">	~CDirect3D();</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">Initialize</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">int</span>, <span class="keyword">bool</span>, HWND, <span class="keyword">bool</span>, <span class="keyword">float</span>, <span class="keyword">float</span>)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">Shutdown</span><span class="params">()</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">BeginScene</span><span class="params">(<span class="keyword">float</span>, <span class="keyword">float</span>, <span class="keyword">float</span>, <span class="keyword">float</span>)</span> <span class="keyword">const</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">EndScene</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function">ID3D11Device* <span class="title">GetDevice</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line">	<span class="function">ID3D11DeviceContext* <span class="title">GetDeviceContext</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">GetProjectionMatrix</span><span class="params">(D3DXMATRIX&amp;)</span> <span class="keyword">const</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">GetWorldMatrix</span><span class="params">(D3DXMATRIX&amp;)</span> <span class="keyword">const</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">GetOrthoMatrix</span><span class="params">(D3DXMATRIX&amp;)</span> <span class="keyword">const</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">GetVideoCardInfo</span><span class="params">(<span class="keyword">char</span>*, <span class="keyword">int</span>&amp;)</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="keyword">bool</span> mVsyncEnabled_&#123;&#125;;</span><br><span class="line">	<span class="keyword">int</span> mVideoCardMemory_&#123;&#125;;</span><br><span class="line">	<span class="keyword">char</span> mVideoCardDescription_[<span class="number">128</span>]&#123;&#125;;</span><br><span class="line">	IDXGISwapChain* mSwapChain_&#123;&#125;;</span><br><span class="line">	ID3D11Device* mDevice_&#123;&#125;;</span><br><span class="line">	ID3D11DeviceContext* mDeviceContext_&#123;&#125;;</span><br><span class="line">	ID3D11RenderTargetView* mRenderTargetView_&#123;&#125;;</span><br><span class="line">	ID3D11Texture2D* mDepthStencilBuffer_&#123;&#125;;</span><br><span class="line">	ID3D11DepthStencilState* mDepthStencilState_&#123;&#125;;</span><br><span class="line">	ID3D11DepthStencilView* mDepthStencilView_&#123;&#125;;</span><br><span class="line">	ID3D11RasterizerState* mRasterState_&#123;&#125;;</span><br><span class="line">	D3DXMATRIX mProjectionMatrix_;</span><br><span class="line">	D3DXMATRIX mWorldMatrix_;</span><br><span class="line">	D3DXMATRIX mOrthoMatrix_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;嗯，看着确实很绝望了，这个类包括了大量的变量定义与函数声明。不过这里边的大部分的变量我们都见过（<code>IDXGISWapChain</code> ，<code>ID3D11Device</code> 等等），剩下的几个例如深度模板的变量我们在 OpenGL 中也是见过的（如果你没有学过，请忽略这个或者翻一下 OpenGL 的学习笔记）。</p>
+<p>&emsp;&emsp;那么来看看这个类的实现吧，首先在构造函数里我们初始化这几个指针变量为空。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">CDirect3D::CDirect3D() &#123;</span><br><span class="line">	mSwapChain_ = <span class="number">0</span>;</span><br><span class="line">	mDevice_ = <span class="number">0</span>;</span><br><span class="line">	mDeviceContext_ = <span class="number">0</span>;</span><br><span class="line">	mRenderTargetView_ = <span class="number">0</span>;</span><br><span class="line">	mDepthStencilBuffer_ = <span class="number">0</span>;</span><br><span class="line">	mDepthStencilState_ = <span class="number">0</span>;</span><br><span class="line">	mDepthStencilView_ = <span class="number">0</span>;</span><br><span class="line">	mRasterState_ = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在来看看我们的 <code>Initialize()</code> 函数，这将是我们这个类中最重要的函数。</p>
+<blockquote>
+<p>The screenWidth and screenHeight variables that are given to this function are the width and height of the window we created in the SystemClass.<br>Direct3D will use these to initialize and use the same window dimensions.<br>The hwnd variable is a handle to the window.  Direct3D will need this handle to access the window previously created.<br>The fullscreen variable is whether we are running in windowed mode or fullscreen.  Direct3D needs this as well for creating the window with the correct settings.<br>The screenDepth and screenNear variables are the depth settings for our 3D environment that will be rendered in the window.<br>The vsync variable indicates if we want Direct3D to render according to the users monitor refresh rate or to just go as fast as possible.</p>
+<p>​                                    ——（教程原文中对于 initialize 方法的参数的描述）</p>
+</blockquote>
+<p>&emsp;&emsp;在 <code>Initialize()</code> 中，我们首先声明了初始化我们成员变量所需要的一些东西。在我们初始化 D3D 之前，我们从显卡 / 显示器上获得刷新率，这样我们可以根据不同的计算机屏幕刷新率不同实现自适应。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">IDXGIFactory* factory;</span><br><span class="line">IDXGIAdapter* adapter;</span><br><span class="line">IDXGIOutput* adapterOutput;</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> numModes, i, numerator = <span class="number">0</span>, denominator = <span class="number">0</span>, stringLength;</span><br><span class="line">DXGI_MODE_DESC* displayModeList;</span><br><span class="line">DXGI_ADAPTER_DESC adapterDesc;</span><br><span class="line"><span class="keyword">int</span> error;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建一个 DXGI 工厂类实例</span></span><br><span class="line">HRESULT result = CreateDXGIFactory(__uuidof(IDXGIFactory), <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">void</span>**&gt;(&amp;factory));</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用工厂对象来创建一个显卡适配器</span></span><br><span class="line">result = factory-&gt;EnumAdapters(<span class="number">0</span>, &amp;adapter);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 枚举出一个输出适配器</span></span><br><span class="line">result = adapter-&gt;EnumOutputs(<span class="number">0</span>, &amp;adapterOutput);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取适合输出的显示格式的数量</span></span><br><span class="line">result = adapterOutput-&gt;GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &amp;numModes, <span class="literal">NULL</span>);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建 List 用来保存显示模式</span></span><br><span class="line">displayModeList = <span class="keyword">new</span> DXGI_MODE_DESC[numModes];</span><br><span class="line"><span class="keyword">if</span> (!displayModeList)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 填充显示模式数组</span></span><br><span class="line">result = adapterOutput-&gt;GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &amp;numModes, displayModeList);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; numModes; i++)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (displayModeList[i].Width == <span class="keyword">static_cast</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt;(screenWidth))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (displayModeList[i].Height == <span class="keyword">static_cast</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt;(screenHeight))</span><br><span class="line">		&#123;</span><br><span class="line">			numerator = displayModeList[i].RefreshRate.Numerator;</span><br><span class="line">			denominator = displayModeList[i].RefreshRate.Denominator;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;可以看到我们调用了两次 <code>GetDisplayModeList</code> ，第一次为 <code>numModes</code> 赋值，之后我们有了显示模式的个数之后可以创建数组，之后才会将数组也传入进去用来保存显示模式列表。最后，我们遍历数组并且匹配我们所传入进来的 <code>width</code> 和 <code>height</code> 。最终得到合适的 <code>numerator</code> 和 <code>denominator</code> 值，用于我们最后在创建交换链的时候赋值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Get the adapter (video card) description.</span></span><br><span class="line">result = adapter-&gt;GetDesc(&amp;adapterDesc);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Store the dedicated video card memory in megabytes.</span></span><br><span class="line">mVideoCardMemory_ = <span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(adapterDesc.DedicatedVideoMemory / <span class="number">1024</span> / <span class="number">1024</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Convert the name of the video card to a character array and store it.</span></span><br><span class="line">error = wcstombs_s(&amp;stringLength, mVideoCardDescription_, <span class="number">128</span>, adapterDesc.Description, <span class="number">128</span>);</span><br><span class="line"><span class="keyword">if</span> (error != <span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;做完这些后，我们再来获得显卡的内存，保存在 <code>mVideoCardMemory_</code> 里。当我们得到了这些数据后，就可以开始创建交换链那些东西了（我们之前做过的）。</p>
+<p>&emsp;&emsp;先释放掉刚才为了获得显卡显示器数据创建的指针对象。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Release the display mode list.</span></span><br><span class="line"><span class="keyword">delete</span>[] displayModeList;</span><br><span class="line">displayModeList = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Release the adapter output.</span></span><br><span class="line">adapterOutput-&gt;Release();</span><br><span class="line">adapterOutput = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Release the adapter.</span></span><br><span class="line">adapter-&gt;Release();</span><br><span class="line">adapter = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Release the factory.</span></span><br><span class="line">factory-&gt;Release();</span><br><span class="line">factory = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;之后，初始化交换链描述：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">DXGI_SWAP_CHAIN_DESC swapChainDesc;</span><br><span class="line"><span class="comment">// Initialize the swap chain description.</span></span><br><span class="line">ZeroMemory(&amp;swapChainDesc, <span class="keyword">sizeof</span>(swapChainDesc));</span><br><span class="line">swapChainDesc.BufferCount = <span class="number">1</span>;</span><br><span class="line">swapChainDesc.BufferDesc.Width = screenWidth;</span><br><span class="line">swapChainDesc.BufferDesc.Height = screenHeight;</span><br><span class="line">swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;</span><br><span class="line"><span class="keyword">if</span> (mVsyncEnabled_)</span><br><span class="line">&#123;</span><br><span class="line">	swapChainDesc.BufferDesc.RefreshRate.Numerator = numerator;</span><br><span class="line">	swapChainDesc.BufferDesc.RefreshRate.Denominator = denominator;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">	swapChainDesc.BufferDesc.RefreshRate.Numerator = <span class="number">0</span>;</span><br><span class="line">	swapChainDesc.BufferDesc.RefreshRate.Denominator = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line">swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;</span><br><span class="line">swapChainDesc.OutputWindow = hwnd;</span><br><span class="line">swapChainDesc.SampleDesc.Count = <span class="number">1</span>;</span><br><span class="line">swapChainDesc.SampleDesc.Quality = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">if</span> (fullscreen) swapChainDesc.Windowed = <span class="literal">false</span>;</span><br><span class="line"><span class="keyword">else</span> swapChainDesc.Windowed = <span class="literal">true</span>;</span><br><span class="line">swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;</span><br><span class="line">swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;</span><br><span class="line">swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;</span><br><span class="line">swapChainDesc.Flags = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;初始化完了之后就可以直接创建了，然后是创建 <code>RenderTargetView</code> 这些。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Set the feature level to DirectX 11.</span></span><br><span class="line">D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the swap chain, Direct3D device, and Direct3D device context.</span></span><br><span class="line">result = D3D11CreateDeviceAndSwapChain(<span class="literal">NULL</span>, D3D_DRIVER_TYPE_HARDWARE, <span class="literal">NULL</span>, <span class="number">0</span>, &amp;featureLevel, <span class="number">1</span>,D3D11_SDK_VERSION, &amp;swapChainDesc, &amp;mSwapChain_, &amp;mDevice_, <span class="literal">NULL</span>, &amp;mDeviceContext_);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Get the pointer to the back buffer.</span></span><br><span class="line">result = mSwapChain_-&gt;GetBuffer(<span class="number">0</span>, __uuidof(ID3D11Texture2D), <span class="keyword">reinterpret_cast</span>&lt;LPVOID*&gt;(&amp;backBufferPtr));</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the render target view with the back buffer pointer.</span></span><br><span class="line">result = mDevice_-&gt;CreateRenderTargetView(backBufferPtr, <span class="literal">NULL</span>, &amp;mRenderTargetView_);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Release pointer to the back buffer as we no longer need it.</span></span><br><span class="line">backBufferPtr-&gt;Release();</span><br><span class="line">backBufferPtr = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在我们来创建深度缓冲描述，用它来创建<a href="https://zh.wikipedia.org/wiki/深度缓冲" target="_blank" rel="noopener">深度缓冲</a>，并且附加一个<a href="http://blog.csdn.net/huhaoxuan2010/article/details/78111171" target="_blank" rel="noopener">深度模板</a>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Initialize the description of the depth buffer.</span></span><br><span class="line">ZeroMemory(&amp;depthBufferDesc, <span class="keyword">sizeof</span>(depthBufferDesc));</span><br><span class="line"></span><br><span class="line"><span class="comment">// Set up the description of the depth buffer.</span></span><br><span class="line">depthBufferDesc.Width = screenWidth;</span><br><span class="line">depthBufferDesc.Height = screenHeight;</span><br><span class="line">depthBufferDesc.MipLevels = <span class="number">1</span>;</span><br><span class="line">depthBufferDesc.ArraySize = <span class="number">1</span>;</span><br><span class="line">depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;</span><br><span class="line">depthBufferDesc.SampleDesc.Count = <span class="number">1</span>;</span><br><span class="line">depthBufferDesc.SampleDesc.Quality = <span class="number">0</span>;</span><br><span class="line">depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;</span><br><span class="line">depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;</span><br><span class="line">depthBufferDesc.CPUAccessFlags = <span class="number">0</span>;</span><br><span class="line">depthBufferDesc.MiscFlags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the texture for the depth buffer using the filled out description.</span></span><br><span class="line">result = mDevice_-&gt;CreateTexture2D(&amp;depthBufferDesc, <span class="literal">NULL</span>, &amp;mDepthStencilBuffer_);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Initialize the description of the stencil state.</span></span><br><span class="line">ZeroMemory(&amp;depthStencilDesc, <span class="keyword">sizeof</span>(depthStencilDesc));</span><br><span class="line"></span><br><span class="line"><span class="comment">// Set up the description of the stencil state.</span></span><br><span class="line">depthStencilDesc.DepthEnable = <span class="literal">true</span>;</span><br><span class="line">depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;</span><br><span class="line">depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;</span><br><span class="line"></span><br><span class="line">depthStencilDesc.StencilEnable = <span class="literal">true</span>;</span><br><span class="line">depthStencilDesc.StencilReadMask = <span class="number">0xFF</span>;</span><br><span class="line">depthStencilDesc.StencilWriteMask = <span class="number">0xFF</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Stencil operations if pixel is front-facing.</span></span><br><span class="line">depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;</span><br><span class="line">depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;</span><br><span class="line">depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;</span><br><span class="line">depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Stencil operations if pixel is back-facing.</span></span><br><span class="line">depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;</span><br><span class="line">depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;</span><br><span class="line">depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;</span><br><span class="line">depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the depth stencil state.</span></span><br><span class="line">result = mDevice_-&gt;CreateDepthStencilState(&amp;depthStencilDesc, &amp;mDepthStencilState_);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Set the depth stencil state.</span></span><br><span class="line">mDeviceContext_-&gt;OMSetDepthStencilState(mDepthStencilState_, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Initailze the depth stencil view.</span></span><br><span class="line">ZeroMemory(&amp;depthStencilViewDesc, <span class="keyword">sizeof</span>(depthStencilViewDesc));</span><br><span class="line"></span><br><span class="line"><span class="comment">// Set up the depth stencil view description.</span></span><br><span class="line">depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;</span><br><span class="line">depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;</span><br><span class="line">depthStencilViewDesc.Texture2D.MipSlice = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the depth stencil view.</span></span><br><span class="line">result = mDevice_-&gt;CreateDepthStencilView(mDepthStencilBuffer_, &amp;depthStencilViewDesc, &amp;mDepthStencilView_);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Bind the render target view and depth stencil buffer to the output render pipeline.</span></span><br><span class="line">mDeviceContext_-&gt;OMSetRenderTargets(<span class="number">1</span>, &amp;mRenderTargetView_, mDepthStencilView_);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;完成这个，我们来创建一个  Raster ：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">rasterDesc.AntialiasedLineEnable = <span class="literal">false</span>;</span><br><span class="line">rasterDesc.CullMode = D3D11_CULL_BACK;</span><br><span class="line">rasterDesc.DepthBias = <span class="number">0</span>;</span><br><span class="line">rasterDesc.DepthBiasClamp = <span class="number">0.0f</span>;</span><br><span class="line">rasterDesc.DepthClipEnable = <span class="literal">true</span>;</span><br><span class="line">rasterDesc.FillMode = D3D11_FILL_SOLID;</span><br><span class="line">rasterDesc.FrontCounterClockwise = <span class="literal">false</span>;</span><br><span class="line">rasterDesc.MultisampleEnable = <span class="literal">false</span>;</span><br><span class="line">rasterDesc.ScissorEnable = <span class="literal">false</span>;</span><br><span class="line">rasterDesc.SlopeScaledDepthBias = <span class="number">0.0f</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the rasterizer state from the description we just filled out.</span></span><br><span class="line">result = mDevice_-&gt;CreateRasterizerState(&amp;rasterDesc, &amp;mRasterState_);</span><br><span class="line"><span class="keyword">if</span> (FAILED(result))</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Now set the rasterizer state.</span></span><br><span class="line">mDeviceContext_-&gt;RSSetState(mRasterState_);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>&emsp;&emsp;Now that the render targets are setup we can continue on to some extra functions that will give us more control over our scenes for future tutorials.<br>First thing is we’ll create is a rasterizer state.  This will give us control over how polygons are rendered.<br>&emsp;&emsp;We can do things like make our scenes render in wireframe mode or have DirectX draw both the front and back faces of polygons.<br>&emsp;&emsp;By default DirectX already has a rasterizer state set up and working the exact same as the one below but you have no control to change it unless you set up one yourself.</p>
+</blockquote>
+<p>&emsp;&emsp;我们自定义光栅化可以使得我们实现更多的效果。</p>
+<p>&emsp;&emsp;最后，创建 <code>ViewPort</code> 以及初始化那几个矩阵（可以看到我们并没有 <code>ViewMatrix</code>，这个准备封装在摄像机类里 <code>CCamera</code>）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Setup the viewport for rendering.</span></span><br><span class="line">viewport.Width = <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(screenWidth);</span><br><span class="line">viewport.Height = <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(screenHeight);</span><br><span class="line">viewport.MinDepth = <span class="number">0.0f</span>;</span><br><span class="line">viewport.MaxDepth = <span class="number">1.0f</span>;</span><br><span class="line">viewport.TopLeftX = <span class="number">0.0f</span>;</span><br><span class="line">viewport.TopLeftY = <span class="number">0.0f</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the viewport.</span></span><br><span class="line">mDeviceContext_-&gt;RSSetViewports(<span class="number">1</span>, &amp;viewport);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Setup the projection matrix.</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">float</span> fieldOfView = <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(D3DX_PI) / <span class="number">4.0f</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">float</span> screenAspect = <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(screenWidth) / <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(screenHeight);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create the projection matrix for 3D rendering.</span></span><br><span class="line">D3DXMatrixPerspectiveFovLH(&amp;mProjectionMatrix_, fieldOfView, screenAspect, screenNear, screenDepth);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Initialize the world matrix to the identity matrix.</span></span><br><span class="line">D3DXMatrixIdentity(&amp;mWorldMatrix_);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create an orthographic projection matrix for 2D rendering.</span></span><br><span class="line">D3DXMatrixOrthoLH(&amp;mOrthoMatrix_, <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(screenWidth), <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(screenHeight), screenNear, screenDepth);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;终于，我们的初始化方法结束了（好长），可以看到是非常麻烦的。幸好我们实际编程中是不会去专注于这里。</p>
+<p>&emsp;&emsp;解决了初始化，剩下的就简单的多了。<code>Shutdown</code> 方法中我们将 <code>delete</code> 掉成员变量指针。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> CDirect3D::Shutdown() &#123;</span><br><span class="line">	<span class="keyword">if</span> (mSwapChain_) &#123;</span><br><span class="line">		mSwapChain_-&gt;Release();</span><br><span class="line">		mSwapChain_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mRasterState_) &#123;</span><br><span class="line">		mRasterState_-&gt;Release();</span><br><span class="line">		mRasterState_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mDevice_) &#123;</span><br><span class="line">		mDevice_-&gt;Release();</span><br><span class="line">		mDevice_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mDeviceContext_) &#123;</span><br><span class="line">		mDeviceContext_-&gt;Release();</span><br><span class="line">		mDeviceContext_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mRenderTargetView_) &#123;</span><br><span class="line">		mRenderTargetView_-&gt;Release();</span><br><span class="line">		mRenderTargetView_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mDepthStencilBuffer_) &#123;</span><br><span class="line">		mDepthStencilBuffer_-&gt;Release();</span><br><span class="line">		mDepthStencilBuffer_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mDepthStencilState_) &#123;</span><br><span class="line">		mDepthStencilState_-&gt;Release();</span><br><span class="line">		mDepthStencilState_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (mDepthStencilView_) &#123;</span><br><span class="line">		mDepthStencilView_-&gt;Release();</span><br><span class="line">		mDepthStencilView_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在 <code>BeginScene</code> 和 <code>EndScene</code> 中我们实现缓冲清空（颜色和深度）和交换。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> CDirect3D::BeginScene(<span class="keyword">const</span> <span class="keyword">float</span> r, <span class="keyword">const</span> <span class="keyword">float</span> g, <span class="keyword">const</span> <span class="keyword">float</span> b , <span class="keyword">const</span> <span class="keyword">float</span> a) <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">float</span> color[] = &#123; r , g , b , a &#125;;</span><br><span class="line">	mDeviceContext_-&gt;ClearRenderTargetView(mRenderTargetView_, color);</span><br><span class="line">	mDeviceContext_-&gt;ClearDepthStencilView(mDepthStencilView_, D3D11_CLEAR_DEPTH, <span class="number">1.0f</span>, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CDirect3D::EndScene() <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> (mVsyncEnabled_) &#123;</span><br><span class="line">		mSwapChain_-&gt;Present(<span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		mSwapChain_-&gt;Present(<span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;剩下的方法则是简单的赋值了：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ID3D11Device* CDirect3D::GetDevice() <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">return</span> mDevice_;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ID3D11DeviceContext* CDirect3D::GetDeviceContext() <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">return</span> mDeviceContext_;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CDirect3D::GetProjectionMatrix(D3DXMATRIX&amp; projectionMatrix) <span class="keyword">const</span> &#123;</span><br><span class="line">	projectionMatrix = mProjectionMatrix_;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CDirect3D::GetWorldMatrix(D3DXMATRIX&amp; worldMatrix) <span class="keyword">const</span> &#123;</span><br><span class="line">	worldMatrix = mWorldMatrix_;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CDirect3D::GetOrthoMatrix(D3DXMATRIX&amp; orthoMatrix) <span class="keyword">const</span> &#123;</span><br><span class="line">	orthoMatrix = mOrthoMatrix_;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CDirect3D::GetVideoCardInfo(<span class="keyword">char</span>* cardName, <span class="keyword">int</span>&amp; memory) <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="built_in">strcpy</span>(cardName, mVideoCardDescription_);</span><br><span class="line">	memory = mVideoCardMemory_;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;终于，我们实现了 <code>CDirect3D</code> 类。现在来修改 <code>CSystem</code> 使得它调用 <code>CDirect3D</code> 。比如初始化或者删除，还有在 <code>Render()</code> 方法的修改：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> CGraphics::Initialize(<span class="keyword">const</span> <span class="keyword">int</span> screenWidth, <span class="keyword">const</span> <span class="keyword">int</span> screenHeight, <span class="keyword">const</span> HWND hwnd) &#123;</span><br><span class="line"></span><br><span class="line">	mDirect3D_ = <span class="keyword">new</span> CDirect3D;</span><br><span class="line">	<span class="keyword">if</span> (!mDirect3D_) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">const</span> HRESULT hr = mDirect3D_-&gt;Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;InitializeGraphics();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CGraphics::Shutdown() &#123;</span><br><span class="line">	<span class="keyword">if</span> (mDirect3D_) &#123;</span><br><span class="line">		mDirect3D_-&gt;Shutdown();</span><br><span class="line">		<span class="keyword">delete</span> mDirect3D_;</span><br><span class="line">		mDirect3D_ = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">this</span>-&gt;ShutdownGraphics();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> CGraphics::RenderGraphics(<span class="keyword">const</span> <span class="keyword">float</span> r , <span class="keyword">const</span> <span class="keyword">float</span> g , <span class="keyword">const</span> <span class="keyword">float</span> b , <span class="keyword">const</span> <span class="keyword">float</span> a) &#123;</span><br><span class="line"></span><br><span class="line">	mDirect3D_-&gt;BeginScene(r, g, b, a);</span><br><span class="line"></span><br><span class="line">	mDirect3D_-&gt;EndScene();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里，我们的 <code>Initialize</code> 需要增加 <code>rgba</code> 的参数。</p>
+<p>&emsp;&emsp;这一篇很长，写的时候也比较乱，之后若是有时间的话可能会进行修改。实现框架并不是我们最终的目的，在这个过程中我们介绍它的实现的过程才是最终需要学习的内容。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/21/Evaluate-Division/" rel="next" title="Evaluate-Division">
+                <i class="fa fa-chevron-left"></i> Evaluate-Division
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/22/Gray-Code/" rel="prev" title="Gray-Code">
+                Gray-Code <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#教程地址"><span class="nav-number">1.</span> <span class="nav-text">教程地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学习记录"><span class="nav-number">2.</span> <span class="nav-text">学习记录</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】7-代码框架4-CDirect3D类',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

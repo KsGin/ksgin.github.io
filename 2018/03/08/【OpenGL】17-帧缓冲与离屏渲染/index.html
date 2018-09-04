@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="参考教程【中文版】帧缓冲 【英文版】Framebuffers 学习记录&amp;emsp;&amp;emsp;帧缓冲（Framebuffer Object, FBO），是 OpenGL 中实现后处理效果的核心技术，在我们之前的代码中，所有的不论是颜色缓冲，深度缓冲等等都是使用的默认帧缓冲，即在主循环中实现渲染并且反映到窗口中。现在我们在默认缓冲之外创建一个自己的帧缓冲对象，在当前帧缓冲之外渲染，以实现一些炫酷的效">
+<meta name="keywords" content="Computer graphics,OpenGL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【OpenGL】17-帧缓冲与离屏渲染">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/08/【OpenGL】17-帧缓冲与离屏渲染/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="参考教程【中文版】帧缓冲 【英文版】Framebuffers 学习记录&amp;emsp;&amp;emsp;帧缓冲（Framebuffer Object, FBO），是 OpenGL 中实现后处理效果的核心技术，在我们之前的代码中，所有的不论是颜色缓冲，深度缓冲等等都是使用的默认帧缓冲，即在主循环中实现渲染并且反映到窗口中。现在我们在默认缓冲之外创建一个自己的帧缓冲对象，在当前帧缓冲之外渲染，以实现一些炫酷的效">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.290Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【OpenGL】17-帧缓冲与离屏渲染">
+<meta name="twitter:description" content="参考教程【中文版】帧缓冲 【英文版】Framebuffers 学习记录&amp;emsp;&amp;emsp;帧缓冲（Framebuffer Object, FBO），是 OpenGL 中实现后处理效果的核心技术，在我们之前的代码中，所有的不论是颜色缓冲，深度缓冲等等都是使用的默认帧缓冲，即在主循环中实现渲染并且反映到窗口中。现在我们在默认缓冲之外创建一个自己的帧缓冲对象，在当前帧缓冲之外渲染，以实现一些炫酷的效">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【OpenGL】17-帧缓冲与离屏渲染 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/08/【OpenGL】17-帧缓冲与离屏渲染/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【OpenGL】17-帧缓冲与离屏渲染</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-08T10:33:55+08:00">2018-03-08</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="参考教程"><a href="#参考教程" class="headerlink" title="参考教程"></a>参考教程</h4><p>【中文版】<a href="https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/" target="_blank" rel="noopener">帧缓冲</a></p>
+<p>【英文版】<a href="https://learnopengl.com/Advanced-OpenGL/Framebuffers" target="_blank" rel="noopener">Framebuffers</a></p>
+<h4 id="学习记录"><a href="#学习记录" class="headerlink" title="学习记录"></a>学习记录</h4><p>&emsp;&emsp;<a href="http://blog.csdn.net/jxw167/article/details/54985183" target="_blank" rel="noopener">帧缓冲（Framebuffer Object, FBO）</a>，是 OpenGL 中实现<strong>后处理</strong>效果的核心技术，在我们之前的代码中，所有的不论是颜色缓冲，深度缓冲等等都是使用的默认帧缓冲，即在主循环中实现渲染并且反映到窗口中。现在我们在默认缓冲之外创建一个自己的帧缓冲对象，在当前帧缓冲之外渲染，以实现一些炫酷的效果。请注意我们使用我们自定义的缓冲对象进行渲染的时候，他是不会显示在主窗口的，所以又称为<strong>离屏渲染</strong>。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;帧缓冲的创建和其他缓冲类似：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GLuint FBO;</span><br><span class="line">   glGenFramebuffers(<span class="number">1</span>, &amp;FBO);</span><br><span class="line">   glBindFramebuffer(GL_FRAMEBUFFER, FBO);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;注意，当我们使用了 <code>glBindFramebuffer(GL_FRAMEBUFFER, FBO);</code>  绑定帧缓冲之后，我们之后所做的渲染都是在 FBO 缓冲上，如果我们要返回默认缓冲，则使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">glBindFramebuffer(GL_FRAMEBUFFER, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>&emsp;&emsp;我们也可以使用GL_READ_FRAMEBUFFER或GL_DRAW_FRAMEBUFFER，将一个帧缓冲分别绑定到读取目标或写入目标。绑定到GL_READ_FRAMEBUFFER的帧缓冲将会使用在所有像是glReadPixels的读取操作中，而绑定到GL_DRAW_FRAMEBUFFER的帧缓冲将会被用作渲染、清除等写入操作的目标。大部分情况你都不需要区分它们，通常都会使用GL_FRAMEBUFFER，绑定到两个上。</p>
+<p>&emsp;&emsp;创建了缓冲之后，我们需要为缓冲添加内容，现在的它还不完整(Complete)，一个完整的帧缓冲需要满足以下的条件：</p>
+<ul>
+<li>附加至少一个缓冲（颜色、深度或模板缓冲）。</li>
+<li>至少有一个颜色附件(Attachment)。</li>
+<li>所有的附件都必须是完整的（保留了内存）。</li>
+<li>每个缓冲都应该有相同的样本数。</li>
+</ul>
+<p>&emsp;&emsp;如果你不知道什么是样本，不要担心，我们将在<a href="https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/11%20Anti%20Aliasing/" target="_blank" rel="noopener">之后的</a>教程中讲到。</p>
+</blockquote>
+<p>&emsp;&emsp;我们可以主动判断帧缓冲是否完整：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (glCheckFramebufferStatus(FBO) != GL_FRAMEBUFFER_COMPLETE) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"FRAME::BUFFER::ERROR"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在，为帧缓冲添加一个纹理贴图附件，首先创建纹理：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GLuint texture;</span><br><span class="line">   glGenTextures(<span class="number">1</span>, &amp;texture);</span><br><span class="line">   glBindTexture(GL_TEXTURE_2D, texture);</span><br><span class="line">   glTexImage2D(GL_TEXTURE_2D, <span class="number">0</span>, GL_RGB, WIDTH, HEIGHT, <span class="number">0</span>, GL_RGB, GL_UNSIGNED_BYTE, <span class="literal">nullptr</span>);</span><br><span class="line">   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);</span><br><span class="line">   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br><span class="line">   glBindTexture(GL_TEXTURE_2D, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;请注意我们 glTexImage2D 方法中 data 的参数设置了 nullptr ，是因为我们要将纹理绑定为帧缓冲的附件，使得我们所渲染的画面成为一个纹理（然后可以将它作为贴图贴到其他地方）。接下来绑定纹理：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>&emsp;&emsp;glFrameBufferTexture2D有以下的参数：</p>
+<ul>
+<li><code>target</code>：帧缓冲的目标（绘制、读取或者两者皆有）</li>
+<li><code>attachment</code>：我们想要附加的附件类型。当前我们正在附加一个颜色附件。注意最后的<code>0</code>意味着我们可以附加多个颜色附件。我们将在之后的教程中提到。</li>
+<li><code>textarget</code>：你希望附加的纹理类型</li>
+<li><code>texture</code>：要附加的纹理本身</li>
+<li><code>level</code>：多级渐远纹理的级别。我们将它保留为0。</li>
+</ul>
+</blockquote>
+<p>&emsp;&emsp;在绑定纹理后，我们还需要为其添加深度缓冲和模板缓冲，使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_DEPTH_COMPONENT, texture, <span class="number">0</span>);</span><br><span class="line">   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_STENCIL_INDEX, texture, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;或者将其放在一起：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">glTexImage2D(</span><br><span class="line"> 		GL_TEXTURE_2D, <span class="number">0</span>, GL_DEPTH24_STENCIL8, WIDTH, HEIGHT, <span class="number">0</span>, </span><br><span class="line"> 		GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, <span class="literal">NULL</span></span><br><span class="line">);</span><br><span class="line">glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;除了这两种，我们来介绍另一个东西：<strong>渲染缓冲对象附件</strong></p>
+<blockquote>
+<p>&emsp;&emsp;渲染缓冲对象(Renderbuffer Object)是在纹理之后引入到OpenGL中，作为一个可用的帧缓冲附件类型的，所以在过去纹理是唯一可用的附件。和纹理图像一样，渲染缓冲对象是一个真正的缓冲，即一系列的字节、整数、像素等。渲染缓冲对象附加的好处是，它会将数据储存为OpenGL原生的渲染格式，它是为离屏渲染到帧缓冲优化过的。</p>
+<p>&emsp;&emsp;渲染缓冲对象直接将所有的渲染数据储存到它的缓冲中，不会做任何针对纹理格式的转换，让它变为一个更快的可写储存介质。然而，渲染缓冲对象通常都是只写的，所以你不能读取它们（比如使用纹理访问）。当然你仍然还是能够使用glReadPixels来读取它，这会从当前绑定的帧缓冲，而不是附件本身，中返回特定区域的像素。</p>
+<p>&emsp;&emsp;因为它的数据已经是原生的格式了，当写入或者复制它的数据到其它缓冲中时是非常快的。所以，交换缓冲这样的操作在使用渲染缓冲对象时会非常快。我们在每个渲染迭代最后使用的glfwSwapBuffers，也可以通过渲染缓冲对象实现：只需要写入一个渲染缓冲图像，并在最后交换到另外一个渲染缓冲就可以了。渲染缓冲对象对这种操作非常完美。</p>
+</blockquote>
+<p>&emsp;&emsp;既然也是缓冲对象，那么使用类似：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GLuint RBO;</span><br><span class="line">   glGenRenderbuffers(<span class="number">1</span>, &amp;RBO);</span><br><span class="line">   glBindRenderbuffer(GL_RENDERBUFFER, RBO);</span><br><span class="line">   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WIDTH, HEIGHT);</span><br><span class="line">   glBindRenderbuffer(GL_RENDERBUFFER, <span class="number">0</span>);</span><br><span class="line">   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们在 glRenderbufferStorage 的参数里设置内部格式为：GL_DEPTH24_STENCIL8 （即 24 位深度 + 8 位模板缓冲）。</p>
+<p>&emsp;&emsp;现在我们将颜色缓冲，深度缓冲，模板缓冲都加在了帧缓冲里，现在为其的纹理进行渲染，我们使用之前光照的部分场景，将其渲染到帧缓冲内部：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line"></span><br><span class="line">     glBindFramebuffer(GL_FRAMEBUFFER, FBO);  <span class="comment">//以下内容绘制在自定义的帧缓冲里</span></span><br><span class="line"></span><br><span class="line">     glEnable(GL_DEPTH_TEST);</span><br><span class="line"></span><br><span class="line">     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);</span><br><span class="line"></span><br><span class="line">     glUseProgram(cudeProgram);</span><br><span class="line">     glUniformMatrix4fv(glGetUniformLocation(cudeProgram, <span class="string">"view"</span>), <span class="number">1</span>, GL_FALSE, &amp;View[<span class="number">0</span>][<span class="number">0</span>]);</span><br><span class="line">     glUniformMatrix4fv(glGetUniformLocation(cudeProgram, <span class="string">"model"</span>), <span class="number">1</span>, GL_FALSE, &amp;cudeModel[<span class="number">0</span>][<span class="number">0</span>]);</span><br><span class="line">     glUniformMatrix4fv(glGetUniformLocation(cudeProgram, <span class="string">"projection"</span>), <span class="number">1</span>, GL_FALSE, &amp;Projection[<span class="number">0</span>][<span class="number">0</span>]);</span><br><span class="line">     glUniform3f(glGetUniformLocation(cudeProgram, <span class="string">"viewPos"</span>), <span class="number">4.0f</span>, <span class="number">5.0f</span>, <span class="number">3.0f</span>);</span><br><span class="line">     glUniform3f(glGetUniformLocation(cudeProgram, <span class="string">"lightPos"</span>), <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>);</span><br><span class="line">     glUniform3f(glGetUniformLocation(cudeProgram, <span class="string">"objectColor"</span>), <span class="number">1.0f</span>, <span class="number">0.5f</span>, <span class="number">0.31f</span>);</span><br><span class="line">     glUniform3f(glGetUniformLocation(cudeProgram, <span class="string">"lightColor"</span>), <span class="number">1.0f</span>, <span class="number">1.0f</span>, <span class="number">1.0f</span>);</span><br><span class="line">     glBindVertexArray(cudeVAO);</span><br><span class="line">     glDrawArrays(GL_TRIANGLES, <span class="number">0</span>, <span class="number">36</span>);</span><br><span class="line">     glBindVertexArray(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">     glUseProgram(lightProgram);</span><br><span class="line">     glUniformMatrix4fv(glGetUniformLocation(lightProgram, <span class="string">"projection"</span>), <span class="number">1</span>, GL_FALSE, &amp;Projection[<span class="number">0</span>][<span class="number">0</span>]);</span><br><span class="line">     glUniformMatrix4fv(glGetUniformLocation(lightProgram, <span class="string">"view"</span>), <span class="number">1</span>, GL_FALSE, &amp;View[<span class="number">0</span>][<span class="number">0</span>]);</span><br><span class="line">     glUniformMatrix4fv(glGetUniformLocation(lightProgram, <span class="string">"model"</span>), <span class="number">1</span>, GL_FALSE, &amp;lightModel[<span class="number">0</span>][<span class="number">0</span>]);</span><br><span class="line">     glBindVertexArray(lightVAO);</span><br><span class="line">     glDrawArrays(GL_TRIANGLES, <span class="number">0</span>, <span class="number">36</span>);</span><br><span class="line">     glBindVertexArray(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">     <span class="comment">// Swap buffers</span></span><br><span class="line">     glfwSwapBuffers(window);</span><br><span class="line">     glfwPollEvents();</span><br><span class="line"></span><br><span class="line"> &#125; <span class="keyword">while</span> (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &amp;&amp;</span><br><span class="line">          glfwWindowShouldClose(window) == <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们在 do-while 的循环里第一行绑定了缓冲为我们所定义的帧缓冲 FBO，之后的代码里所做的渲染将都渲染到 FBO 里，并变成可以使用的纹理（还记得之前创建的那个 data 为空的纹理吗）。现在如果启动，黑色窗口将不会有任何显示，因为并没有在主窗口的默认缓冲放入任何内容。</p>
+<p>&emsp;&emsp;现在我们创建一个窗口大小的长方形，并将纹理贴在上方（这样的显示与我们没有使用帧缓冲是一致的），首先创建长方形数组（代码请见 <a href="https://github.com/KsGin/LearnOpenGL/blob/master/Framebuffers" target="_blank" rel="noopener">Github</a> ），并配置相应的 VAO , VBO 以及着色器程序，在 Github 都可以找到。最后，我们在 do-while 循环里将帧缓冲绑定为默认缓冲，并为长方形附上纹理。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">       ...</span><br><span class="line">	glBindFramebuffer(GL_FRAMEBUFFER, <span class="number">0</span>); <span class="comment">//以下为默认窗口帧缓冲</span></span><br><span class="line">       glDisable(GL_DEPTH_TEST);</span><br><span class="line">       glClear(GL_COLOR_BUFFER_BIT);</span><br><span class="line"></span><br><span class="line">       glUseProgram(screenProgram);</span><br><span class="line">       glUniform1i(glGetUniformLocation(screenProgram, <span class="string">"screenTexture"</span>), <span class="number">0</span>);</span><br><span class="line">       glBindTexture(GL_TEXTURE_2D, texture);</span><br><span class="line"></span><br><span class="line">       glBindVertexArray(screenVAO);</span><br><span class="line">       glDrawArrays(GL_TRIANGLES, <span class="number">0</span>, <span class="number">6</span>);</span><br><span class="line">       glBindVertexArray(<span class="number">0</span>);</span><br><span class="line">       ...</span><br><span class="line">   &#125;(...)</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们在帧缓冲里渲染的内容作为一个纹理贴图在我们所画的长方形上成功显示。</p>
+<p>&emsp;&emsp;当然，帧缓冲的作用并不是让我们如此去多次一举的写代码，而是实现很多很好玩的特效，因为现在我们将之前的缓冲做成纹理，所以我们可以在着色器里对纹理做很多的改动，例如修改颜色为 x = 1 - x （反相）等等。 </p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/OpenGL/" rel="tag"> OpenGL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/08/Kth-Smallest-Element-in-a-BST/" rel="next" title="Kth-Smallest-Element-in-a-BST">
+                <i class="fa fa-chevron-left"></i> Kth-Smallest-Element-in-a-BST
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/09/Escape-The-Ghosts/" rel="prev" title="Escape-The-Ghosts">
+                Escape-The-Ghosts <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考教程"><span class="nav-number">1.</span> <span class="nav-text">参考教程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学习记录"><span class="nav-number">2.</span> <span class="nav-text">学习记录</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【OpenGL】17-帧缓冲与离屏渲染',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

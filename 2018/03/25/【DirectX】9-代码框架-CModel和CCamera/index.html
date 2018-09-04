@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="教程地址教程 4: 缓冲区、着色器和 HLSL 学习记录&amp;emsp;&amp;emsp;这篇文章中，我们将更新我们框架代码中的 CModel 和 CCamera 。前者用来描绘我们世界坐标系空间中的某个物体，而后者则描述我们的摄像机，则我们的观察者。 &amp;emsp;&amp;emsp;之后我们的框架将会变为这样（是很丑，但我懒得再去画了！）：">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】9-代码框架-CModel和CCamera">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/25/【DirectX】9-代码框架-CModel和CCamera/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="教程地址教程 4: 缓冲区、着色器和 HLSL 学习记录&amp;emsp;&amp;emsp;这篇文章中，我们将更新我们框架代码中的 CModel 和 CCamera 。前者用来描绘我们世界坐标系空间中的某个物体，而后者则描述我们的摄像机，则我们的观察者。 &amp;emsp;&amp;emsp;之后我们的框架将会变为这样（是很丑，但我懒得再去画了！）：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://image.ibb.co/c6LWZn/image.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.288Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】9-代码框架-CModel和CCamera">
+<meta name="twitter:description" content="教程地址教程 4: 缓冲区、着色器和 HLSL 学习记录&amp;emsp;&amp;emsp;这篇文章中，我们将更新我们框架代码中的 CModel 和 CCamera 。前者用来描绘我们世界坐标系空间中的某个物体，而后者则描述我们的摄像机，则我们的观察者。 &amp;emsp;&amp;emsp;之后我们的框架将会变为这样（是很丑，但我懒得再去画了！）：">
+<meta name="twitter:image" content="https://image.ibb.co/c6LWZn/image.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】9-代码框架-CModel和CCamera | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/25/【DirectX】9-代码框架-CModel和CCamera/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】9-代码框架-CModel和CCamera</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-25T12:36:52+08:00">2018-03-25</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="教程地址"><a href="#教程地址" class="headerlink" title="教程地址"></a>教程地址</h4><p><a href="http://www.rastertek.com/dx11s2tut04.html" target="_blank" rel="noopener">教程 4: 缓冲区、着色器和 HLSL</a></p>
+<h4 id="学习记录"><a href="#学习记录" class="headerlink" title="学习记录"></a>学习记录</h4><p>&emsp;&emsp;这篇文章中，我们将更新我们框架代码中的 <code>CModel</code> 和 <code>CCamera</code> 。前者用来描绘我们世界坐标系空间中的某个物体，而后者则描述我们的摄像机，则我们的观察者。</p>
+<p>&emsp;&emsp;之后我们的框架将会变为这样（是很丑，但我懒得再去画了！）：</p>
+<p><img src="https://image.ibb.co/c6LWZn/image.png" alt="1"></p>
+<a id="more"></a>
+<p>&emsp;&emsp;先来看看 <code>CModel</code> 类，这个类描述了我们的一个实体模型，并提供了渲染接口，他的声明如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CModel</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">Vertex</span> &#123;</span></span><br><span class="line">		DirectX::XMFLOAT3 position;</span><br><span class="line">		DirectX::XMFLOAT3 color;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	CModel();</span><br><span class="line">	CModel(CModel&amp; cm);</span><br><span class="line">	~CModel();</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">Initialize</span><span class="params">(ID3D11Device*)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">Shutdown</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">Render</span><span class="params">(ID3D11DeviceContext*)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">GetIndexCount</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">InitializeModel</span><span class="params">(ID3D11Device*)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">ShutdownModel</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">RenderModel</span><span class="params">(ID3D11DeviceContext*)</span></span>;</span><br><span class="line"></span><br><span class="line">	ID3D11Buffer *mVertexBuffer_&#123;&#125;, *mIndexBuffer_&#123;&#125;;</span><br><span class="line">	<span class="keyword">int</span> mVertexCount&#123;&#125;, mIndexCount&#123;&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这些都是比较简单能理解的，在初始化和销毁的函数里，我们对几个成员变量进行初始化和销毁操作。而公开接口里都是直接调用私有函数，如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">CModel::CModel() : mVertexBuffer_(<span class="literal">nullptr</span>), mIndexBuffer_(<span class="literal">nullptr</span>), mVertexCount(<span class="number">0</span>), mIndexCount(<span class="number">0</span>) &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CModel::CModel(CModel&amp; cm) &#123;</span><br><span class="line">	*<span class="keyword">this</span> = cm;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CModel::~CModel() = <span class="keyword">default</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> CModel::Initialize(ID3D11Device* device) &#123;</span><br><span class="line">	<span class="keyword">return</span> InitializeModel(device);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CModel::Shutdown() &#123;</span><br><span class="line">	ShutdownModel();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CModel::Render(ID3D11DeviceContext* mDeviceContext) &#123;</span><br><span class="line">	RenderModel(mDeviceContext);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> CModel::GetIndexCount() <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">return</span> mIndexCount;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;之后，在 <code>InitializeModel</code> 函数里，我们对我们的模型进行初始化，在我们之前的三角形那一篇里我们进行过这些操作（<a href="https://blog.ksgin.com/2018/03/18/【directx】3-d3d三角形/">【directx】3-d3d三角形</a>），这里也基本一样（不同的是这里我们将使用索引缓冲）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> CModel::InitializeModel(ID3D11Device* device) &#123;</span><br><span class="line">	Vertex *vertices;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> *indices;</span><br><span class="line"></span><br><span class="line">	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;</span><br><span class="line">	D3D11_SUBRESOURCE_DATA vertexData, indexData;</span><br><span class="line">	HRESULT hr;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 定义数组保存顶点和索引</span></span><br><span class="line">	mVertexCount = <span class="number">3</span>;</span><br><span class="line">	mIndexCount = <span class="number">3</span>;</span><br><span class="line">	vertices = <span class="keyword">new</span> Vertex[mVertexCount]&#123;</span><br><span class="line">		&#123;DirectX::XMFLOAT3(<span class="number">-1.0f</span> , <span class="number">-1.0f</span> , <span class="number">0.0f</span>) , DirectX::XMFLOAT4(<span class="number">0.0f</span> , <span class="number">0.0f</span> , <span class="number">1.0f</span> , <span class="number">1.0f</span>)&#125; ,</span><br><span class="line">		&#123;DirectX::XMFLOAT3(<span class="number">0.0f</span> , <span class="number">1.0f</span> , <span class="number">0.0f</span>) , DirectX::XMFLOAT4(<span class="number">0.0f</span> , <span class="number">0.0f</span> , <span class="number">1.0f</span> , <span class="number">1.0f</span>)&#125; ,</span><br><span class="line">		&#123;DirectX::XMFLOAT3(<span class="number">1.0f</span> , <span class="number">-1.0f</span> , <span class="number">0.0f</span>) , DirectX::XMFLOAT4(<span class="number">0.0f</span> , <span class="number">0.0f</span> , <span class="number">1.0f</span> , <span class="number">1.0f</span>)&#125; ,</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="keyword">if</span> (!vertices) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	indices = <span class="keyword">new</span> <span class="keyword">unsigned</span> <span class="keyword">long</span>[mIndexCount] &#123;</span><br><span class="line">		<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span></span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="keyword">if</span> (!indices) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 填写缓冲区描述并且创建缓冲</span></span><br><span class="line">	ZeroMemory(&amp;vertexBufferDesc, <span class="keyword">sizeof</span>(vertexBufferDesc));</span><br><span class="line">	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;</span><br><span class="line">	vertexBufferDesc.ByteWidth = <span class="keyword">sizeof</span>(Vertex) * mVertexCount;</span><br><span class="line">	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;</span><br><span class="line">	ZeroMemory(&amp;indexBufferDesc, <span class="keyword">sizeof</span>(indexBufferDesc));</span><br><span class="line">	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;</span><br><span class="line">	vertexBufferDesc.ByteWidth = <span class="keyword">sizeof</span>(<span class="keyword">unsigned</span> <span class="keyword">long</span>) * mIndexCount;</span><br><span class="line">	vertexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;</span><br><span class="line"></span><br><span class="line">	hr = device-&gt;CreateBuffer(&amp;vertexBufferDesc, &amp;vertexData, &amp;mVertexBuffer_);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">		<span class="keyword">return</span> hr;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	hr = device-&gt;CreateBuffer(&amp;indexBufferDesc, &amp;indexData, &amp;mIndexBuffer_);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">		<span class="keyword">return</span> hr;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 删除无用数据</span></span><br><span class="line">	<span class="keyword">delete</span>[] vertices;</span><br><span class="line">	vertices = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">delete</span>[] indices;</span><br><span class="line">	indices = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后在 <code>Render</code> 方法里，我们对设备上下文对象进行配置。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> CModel::RenderModel(ID3D11DeviceContext* deviceContext) <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> stride , offset;</span><br><span class="line">	stride = <span class="keyword">sizeof</span>(Vertex);</span><br><span class="line">	offset = <span class="number">0</span>;</span><br><span class="line">	deviceContext-&gt;IASetVertexBuffers(<span class="number">0</span>, <span class="number">1</span>, &amp;mVertexBuffer_, &amp;stride, &amp;offset);</span><br><span class="line">	deviceContext-&gt;IASetIndexBuffer(mIndexBuffer_, DXGI_FORMAT_R32_UINT, <span class="number">0</span>);</span><br><span class="line">	deviceContext-&gt;IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这样，我们就实现了 <code>CModel</code> 类，接下来看 <code>CCamera</code> 。</p>
+<p>&emsp;&emsp;首先来看声明：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CCamera</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	CCamera();</span><br><span class="line">	CCamera(CCamera&amp; cc);</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">SetPosition</span><span class="params">(<span class="keyword">float</span>, <span class="keyword">float</span>, <span class="keyword">float</span>)</span></span>;	<span class="comment">// x y z</span></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">SetRotation</span><span class="params">(<span class="keyword">float</span>, <span class="keyword">float</span>, <span class="keyword">float</span>)</span></span>;  <span class="comment">// pitch yaw roll</span></span><br><span class="line"></span><br><span class="line">	DirectX::<span class="function">XMFLOAT3 <span class="title">GetPosition</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line">	DirectX::<span class="function">XMFLOAT3 <span class="title">GetRotation</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">Render</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">GetViewMatrix</span><span class="params">(DirectX::XMMATRIX&amp;)</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	DirectX::XMFLOAT3 mPosition&#123;&#125;;</span><br><span class="line">	DirectX::XMFLOAT3 mRotation&#123;&#125;;</span><br><span class="line">	DirectX::XMMATRIX mViewMatrix&#123;&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在这个类里我们保存着摄像机的坐标和朝向以及一个观察矩阵。那几个 <code>Set</code> <code>Get</code> 函数都比较简单，只是赋值性操作而已。如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">CCamera::CCamera() &#123;</span><br><span class="line">	mPosition = DirectX::XMFLOAT3();</span><br><span class="line">	mRotation = DirectX::XMFLOAT3();</span><br><span class="line">	mViewMatrix = DirectX::XMMATRIX();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CCamera::CCamera(CCamera&amp; cc) &#123;</span><br><span class="line">	*<span class="keyword">this</span> = cc;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CCamera::SetPosition(<span class="keyword">const</span> <span class="keyword">float</span> x , <span class="keyword">const</span> <span class="keyword">float</span> y , <span class="keyword">const</span> <span class="keyword">float</span> z) &#123;</span><br><span class="line">	mPosition.x = x;</span><br><span class="line">	mPosition.y = y;</span><br><span class="line">	mPosition.z = z;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CCamera::SetRotation(<span class="keyword">const</span> <span class="keyword">float</span> pitch, <span class="keyword">const</span> <span class="keyword">float</span> yaw, <span class="keyword">const</span> <span class="keyword">float</span> roll) &#123;</span><br><span class="line">	mRotation.x = pitch;</span><br><span class="line">	mRotation.y = yaw;</span><br><span class="line">	mRotation.z = roll;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">DirectX::XMFLOAT3 CCamera::GetPosition() <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">return</span> mPosition;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">DirectX::XMFLOAT3 CCamera::GetRotation() <span class="keyword">const</span> &#123;</span><br><span class="line">	<span class="keyword">return</span> mRotation;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> CCamera::GetViewMatrix(DirectX::XMMATRIX&amp; view) <span class="keyword">const</span> &#123;</span><br><span class="line">	view = mViewMatrix;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后是 <code>Render</code> 函数，在这个函数里我们将使用 <code>mPosition</code> 变量和 <code>mRotation</code> 变量来更新观察矩阵，即用坐标和朝向来更新观察矩阵：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> CCamera::Render() &#123;</span><br><span class="line">	DirectX::XMVECTOR positionVec, lookAtVec, upVec;	</span><br><span class="line">	DirectX::XMFLOAT3 positionFo3, lookAtFo3, upFo3;</span><br><span class="line">	DirectX::XMMATRIX rotationMatrix;</span><br><span class="line"></span><br><span class="line">	positionFo3 = mPosition;</span><br><span class="line">	upFo3 = DirectX::XMFLOAT3(<span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>);</span><br><span class="line">	lookAtFo3 = DirectX::XMFLOAT3(<span class="number">0.0f</span>, <span class="number">0.0f</span>,<span class="number">1.0f</span>);</span><br><span class="line"></span><br><span class="line">	positionVec = DirectX::XMLoadFloat3(&amp;positionFo3);</span><br><span class="line">	upVec = DirectX::XMLoadFloat3(&amp;upFo3);</span><br><span class="line">	lookAtVec = DirectX::XMLoadFloat3(&amp;lookAtFo3);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 使用 rotation 来创建 rotationMatrix </span></span><br><span class="line">	rotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(mRotation.x * <span class="number">0.0174532925f</span>, mRotation.y * <span class="number">0.0174532925f</span>, mRotation.z * <span class="number">0.0174532925f</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 使用 rotation 矩阵更新 lookAt 和 up 向量</span></span><br><span class="line">	upVec = DirectX::XMVector2TransformCoord(upVec, rotationMatrix);</span><br><span class="line">	lookAtVec = DirectX::XMVector2TransformCoord(lookAtVec, rotationMatrix);</span><br><span class="line">	lookAtVec = DirectX::XMVectorAdd(positionVec, lookAtVec);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 使用 pos , lookat , up 来创建观察矩阵</span></span><br><span class="line">	mViewMatrix = DirectX::XMMatrixLookAtLH(positionVec, lookAtVec, upVec);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这样，我们的摄像机类也结束了。现在可以往上一层的 <code>CGraphics</code> 类来添加内容了。首先在声明里增加这两个变量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CModel *mModel_;</span><br><span class="line">CCamera *mCamera_;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;初始化什么的和其他一样：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> CGraphics::Initialize(<span class="keyword">const</span> <span class="keyword">int</span> screenWidth, <span class="keyword">const</span> <span class="keyword">int</span> screenHeight, <span class="keyword">const</span> HWND hwnd) &#123;</span><br><span class="line"></span><br><span class="line">	HRESULT hr;	</span><br><span class="line">	<span class="keyword">char</span> vsFileName[] = <span class="string">"vs.vs"</span>;</span><br><span class="line">	<span class="keyword">char</span> psFileName[] = <span class="string">"ps.ps"</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">char</span>* vsFile = vsFileName;</span><br><span class="line">	<span class="keyword">char</span>* psFile = psFileName;</span><br><span class="line"></span><br><span class="line">	mDirect3D_ = <span class="keyword">new</span> CDirect3D;</span><br><span class="line">	<span class="keyword">if</span> (!mDirect3D_) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	hr = mDirect3D_-&gt;Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	mCamera_ = <span class="keyword">new</span> CCamera;</span><br><span class="line">	<span class="keyword">if</span> (!mCamera_) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	mCamera_-&gt;SetPosition(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">3.0f</span>);</span><br><span class="line"></span><br><span class="line">	mModel_ = <span class="keyword">new</span> CModel;</span><br><span class="line">	<span class="keyword">if</span> (!mModel_) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	mModel_-&gt;Initialize(mDirect3D_-&gt;GetDevice());</span><br><span class="line"></span><br><span class="line">	mShader_ = <span class="keyword">new</span> CShader;</span><br><span class="line">	<span class="keyword">if</span> (!mShader_) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	hr = mShader_-&gt;Initialize(mDirect3D_-&gt;GetDevice(), hwnd, vsFile , psFile);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;InitializeGraphics();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后，是增加内容后的 <code>RenderGraphics</code> 函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> CGraphics::RenderGraphics(<span class="keyword">const</span> <span class="keyword">float</span> r , <span class="keyword">const</span> <span class="keyword">float</span> g , <span class="keyword">const</span> <span class="keyword">float</span> b , <span class="keyword">const</span> <span class="keyword">float</span> a) &#123;</span><br><span class="line"></span><br><span class="line">	DirectX::XMMATRIX world, view, projection;</span><br><span class="line"></span><br><span class="line">	mDirect3D_-&gt;BeginScene(r, g, b, a);</span><br><span class="line">	mCamera_-&gt;Render();</span><br><span class="line"></span><br><span class="line">	mDirect3D_-&gt;GetWorldMatrix(world);</span><br><span class="line">	mCamera_-&gt;GetViewMatrix(view);</span><br><span class="line">	mDirect3D_-&gt;GetProjectionMatrix(projection);</span><br><span class="line"></span><br><span class="line">	mModel_-&gt;Render(mDirect3D_-&gt;GetDeviceContext());</span><br><span class="line"></span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">bool</span> result = mShader_-&gt;Render(mDirect3D_-&gt;GetDeviceContext() , mModel_-&gt;GetIndexCount() , world , view, projection);</span><br><span class="line">	<span class="keyword">if</span> (!result) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	mDirect3D_-&gt;EndScene();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;需要注意的是，我们更新了数学库，使用 <code>DirectXMath</code> 中的 <code>XMFloat</code> 和 <code>XMMatrix</code> 等，所以之前的代码也需要去修改。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/24/经典光照模型之Phong模型一/" rel="next" title="经典光照模型之漫反射与Lambert模型">
+                <i class="fa fa-chevron-left"></i> 经典光照模型之漫反射与Lambert模型
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/25/【DirectX】10-纹理/" rel="prev" title="【DirectX】10-纹理">
+                【DirectX】10-纹理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#教程地址"><span class="nav-number">1.</span> <span class="nav-text">教程地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学习记录"><span class="nav-number">2.</span> <span class="nav-text">学习记录</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】9-代码框架-CModel和CCamera',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

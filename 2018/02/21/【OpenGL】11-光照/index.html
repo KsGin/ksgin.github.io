@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="参考教程【中文版】基础光照 【英文版】Basic Lighting 学习心得&amp;emsp;&amp;emsp;终于是开始接触一些较为复杂的东西了，这篇主要是讲解光照实现的原理（漫反射光和镜面光）以及他们的计算方式。">
+<meta name="keywords" content="Computer graphics,OpenGL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【OpenGL】11-光照">
+<meta property="og:url" content="https://blog.ksgin.com/2018/02/21/【OpenGL】11-光照/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="参考教程【中文版】基础光照 【英文版】Basic Lighting 学习心得&amp;emsp;&amp;emsp;终于是开始接触一些较为复杂的东西了，这篇主要是讲解光照实现的原理（漫反射光和镜面光）以及他们的计算方式。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tNc79ly1foohv9pligj31jy13igmr.jpg">
+<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tNc79ly1foohv86wjej31jg0zygms.jpg">
+<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNc79ly1foohv8rji0j306403at8l.jpg">
+<meta property="og:image" content="https://learnopengl-cn.github.io/img/02/02/basic_lighting_normal_transformation.png">
+<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tNc79ly1foohvap5cmj31kk0zk3zp.jpg">
+<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tNc79ly1foohvbndn8j30cf08yq31.jpg">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.289Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【OpenGL】11-光照">
+<meta name="twitter:description" content="参考教程【中文版】基础光照 【英文版】Basic Lighting 学习心得&amp;emsp;&amp;emsp;终于是开始接触一些较为复杂的东西了，这篇主要是讲解光照实现的原理（漫反射光和镜面光）以及他们的计算方式。">
+<meta name="twitter:image" content="https://ws1.sinaimg.cn/large/006tNc79ly1foohv9pligj31jy13igmr.jpg">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【OpenGL】11-光照 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/02/21/【OpenGL】11-光照/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【OpenGL】11-光照</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-21T20:55:44+08:00">2018-02-21</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="参考教程"><a href="#参考教程" class="headerlink" title="参考教程"></a>参考教程</h4><p>【中文版】<a href="https://learnopengl-cn.github.io/02%20Lighting/02%20Basic%20Lighting/" target="_blank" rel="noopener">基础光照</a></p>
+<p>【英文版】<a href="http://learnopengl.com/#!Lighting/Basic-Lighting" target="_blank" rel="noopener">Basic Lighting</a></p>
+<h4 id="学习心得"><a href="#学习心得" class="headerlink" title="学习心得"></a>学习心得</h4><p>&emsp;&emsp;终于是开始接触一些较为复杂的东西了，这篇主要是讲解光照实现的原理（漫反射光和镜面光）以及他们的计算方式。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;首先，我们需要作出一个适合检测光照的模型，在此我实现了一个有着自转与公转的光源——正方体模型，最终效果如下：</p>
+<p>&emsp;&emsp;<a href="https://youtu.be/9sVXvEvTNTk" target="_blank" rel="noopener">点此去Youtube观看</a></p>
+<p>&emsp;&emsp;今天我们需要实现的是漫反射光，和镜面反射光。漫反射光是什么呢，首先我们需要介绍这几个概念，<strong>环境光</strong>，<strong>漫反射光</strong>，<strong>镜面反射光</strong>。</p>
+<p>&emsp;&emsp;环境光，我们生活中很少有完全漆黑的时候，大部分情况下我们都可以模糊的看到物体，这个时候我们没有明确的光源，我们称之为环境光。在环境光下，我们只是能够勉强的看到物体，但并不是很清楚，例如：</p>
+<p><img src="https://ws1.sinaimg.cn/large/006tNc79ly1foohv9pligj31jy13igmr.jpg" alt="WX20180221-224145@2x"></p>
+<p>&emsp;&emsp;忽略掉那个没有产生作用的光源，我们可以模糊的看到一坨东西，但是并不能很清楚的看到颜色（因为我注释了光源生效的代码）。</p>
+<p>&emsp;&emsp;当漫发射光生效后，我们已经可以清楚的看到物体，以及辨别他的颜色（请注意，不管我们能否看到，物体是存在颜色的）：</p>
+<p><img src="https://ws1.sinaimg.cn/large/006tNc79ly1foohv86wjej31jg0zygms.jpg" alt="2222"></p>
+<p>&emsp;&emsp;那么漫反射到底是什么呢，当一束光照到一个物体上时，因为物体本身颜色决定了他能吸收某个色的光和反射某个的光，同时我们就可以看到他的颜色。而漫反射重要的地方在于判断一束光是否照射到一个物体上，在这里我们需要拿出初中物理的两个概念，<a href="https://baike.baidu.com/item/%E5%85%A5%E5%B0%84%E8%A7%92" target="_blank" rel="noopener">入射角</a>，<a href="https://baike.baidu.com/item/%E6%B3%95%E7%BA%BF" target="_blank" rel="noopener">法线</a>。</p>
+<p><img src="https://ws3.sinaimg.cn/large/006tNc79ly1foohv8rji0j306403at8l.jpg" alt="6a63f6246b600c33139841aa114c510fd8f9a1eb"></p>
+<p>&emsp;&emsp;途中P为法线，A为入射光线，A与P的夹角即是入射角。看到这里想必你已经大概猜出来了，我们用来判断是否光照射到上边的依据就是入射角。当入射角大于90°时，说明光线没有照射到这里。而根据入射角的角度，光的强度也是不一样的。</p>
+<p>&emsp;&emsp;明白了原理，我们便可以用OpenGL中Shader提供好的方法来模拟漫反射来对物体进行着色。首先我们需要得到物体的法线，我们在给出正方体坐标的时候一并给出。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> vertices[] = &#123;</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>,</span><br><span class="line"></span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>,</span><br><span class="line"></span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line"></span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line"></span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">-1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line"></span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.5f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">        <span class="number">-0.5f</span>, <span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个数组中，每六个值为一组，前三个存储坐标，后三个存储法线向量，可以看出由于我们的长方体有六个边，所以总共有六个不同的法线向量。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// normal attribute</span></span><br><span class="line">glVertexAttribPointer(</span><br><span class="line">        <span class="number">1</span>,</span><br><span class="line">        <span class="number">3</span>,</span><br><span class="line">        GL_FLOAT,</span><br><span class="line">        GL_FALSE,</span><br><span class="line">        <span class="number">6</span> * <span class="keyword">sizeof</span>(<span class="keyword">float</span>),</span><br><span class="line">        (<span class="keyword">void</span> *) (<span class="number">3</span> * <span class="keyword">sizeof</span>(<span class="keyword">float</span>))</span><br><span class="line">);</span><br><span class="line">glEnableVertexAttribArray(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;将这些发现向量绑定到顶点数组里，然后可以在顶点着色器中操作，</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">layout (location = <span class="number">1</span>) in vec3 aNormal;</span><br><span class="line">...</span><br><span class="line">out vec3 Normal;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    Normal = mat3(transpose(inverse(model))) * aNormal;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;可以看到，我们将顶点坐标中的法线向量读出来，然后进行通过一个 inverse（矩阵的逆） 操作和 transpose （矩阵的转置）操作得到的三级矩阵与其相乘并传值给片段着色器。而做这多余的操作也是有原因的：</p>
+<blockquote>
+<p>&emsp;&emsp;首先，法向量只是一个方向向量，不能表达空间中的特定位置。同时，法向量没有齐次坐标（顶点位置中的w分量）。这意味着，位移不应该影响到法向量。因此，如果我们打算把法向量乘以一个模型矩阵，我们就要从矩阵中移除位移部分，只选用模型矩阵左上角3×3的矩阵（注意，我们也可以把法向量的w分量设置为0，再乘以4×4矩阵；这同样可以移除位移）。对于法向量，我们只希望对它实施缩放和旋转变换。</p>
+<p>&emsp;&emsp;其次，如果模型矩阵执行了不等比缩放，顶点的改变会导致法向量不再垂直于表面了。因此，我们不能用这样的模型矩阵来变换法向量。下面的图展示了应用了不等比缩放的模型矩阵对法向量的影响：</p>
+<p><img src="https://learnopengl-cn.github.io/img/02/02/basic_lighting_normal_transformation.png" alt="img"></p>
+<p>&emsp;&emsp;每当我们应用一个不等比缩放时（注意：等比缩放不会破坏法线，因为法线的方向没被改变，仅仅改变了法线的长度，而这很容易通过标准化来修复），法向量就不会再垂直于对应的表面了，这样光照就会被破坏。</p>
+<p>&emsp;&emsp;修复这个行为的诀窍是使用一个为法向量专门定制的模型矩阵。这个矩阵称之为法线矩阵(Normal Matrix)，它使用了一些线性代数的操作来移除对法向量错误缩放的影响。如果你想知道这个矩阵是如何计算出来的，建议去阅读这个<a href="http://www.lighthouse3d.com/tutorials/glsl-tutorial/the-normal-matrix/" target="_blank" rel="noopener">文章</a>。</p>
+<p>&emsp;&emsp;法线矩阵被定义为「模型矩阵左上角的逆矩阵的转置矩阵」。真是拗口，如果你不明白这是什么意思，别担心，我们还没有讨论逆矩阵(Inverse Matrix)和转置矩阵(Transpose Matrix)。注意，大部分的资源都会将法线矩阵定义为应用到模型-观察矩阵(Model-view Matrix)上的操作，但是由于我们只在世界空间中进行操作（不是在观察空间），我们只使用模型矩阵。</p>
+<p>&emsp;&emsp;在顶点着色器中，我们可以使用inverse和transpose函数自己生成这个法线矩阵，这两个函数对所有类型矩阵都有效。注意我们还要把被处理过的矩阵强制转换为3×3矩阵，来保证它失去了位移属性以及能够乘以<code>vec3</code>的法向量。</p>
+<p>&emsp;&emsp;在漫反射光照部分，光照表现并没有问题，这是因为我们没有对物体本身执行任何缩放操作，所以并不是必须要使用一个法线矩阵，仅仅让模型矩阵乘以法线也可以。可是，如果你进行了不等比缩放，使用法线矩阵去乘以法向量就是必不可少的了。</p>
+<p>&emsp;&emsp;即使是对于着色器来说，逆矩阵也是一个开销比较大的运算，因此，只要可能就应该避免在着色器中进行逆矩阵运算，它们必须为你场景中的每个顶点都进行这样的处理。用作学习目这样做是可以的，但是对于一个对效率有要求的应用来说，在绘制之前你最好用CPU计算出法线矩阵，然后通过uniform把值传递给着色器（像模型矩阵一样）。</p>
+</blockquote>
+<p>&emsp;&emsp;传给片段着色器之后，我们就获得了最后计算着色的法线，那么还需要计算入射向量，这个也比较简单，通过对片段位置和光源的位置相减就可以获得，而片段位置可以通过模型矩阵与定点坐标相乘获得：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">layout(location=<span class="number">0</span>) in vec3 aPos;</span><br><span class="line">...</span><br><span class="line">uniform mat4 model;</span><br><span class="line"></span><br><span class="line">out vec3 FragPos;</span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    ....</span><br><span class="line"> 	FragPos = vec3(model * vec4(aPos, <span class="number">1.0</span>));</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在顶点着色器里完成这些操作并传值给片段着色器，便可以获得入射向量。</p>
+<p>&emsp;&emsp;最后，通过 dot 方法得到入射角，并使其不会产生负数（使用max，当dot得到负数时给他赋值0），如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vec3 norm = normalize(Normal);                  <span class="comment">//单位化</span></span><br><span class="line">vec3 lightDir = normalize(lightPos - FragPos);  <span class="comment">//单位化</span></span><br><span class="line"><span class="keyword">float</span> diff = max(dot(norm, lightDir), <span class="number">0.0</span>); </span><br><span class="line">vec3 diffuse = diff * lightColor</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>&emsp;&emsp;当计算光照时我们通常不关心一个向量的模长或它的位置，我们只关心它们的方向。所以，几乎所有的计算都使用单位向量完成，因为这简化了大部分的计算（比如点乘）。所以当进行光照计算时，确保你总是对相关向量进行标准化，来保证它们是真正地单位向量。忘记对向量进行标准化是一个十分常见的错误。</p>
+</blockquote>
+<p>&emsp;&emsp;最后我们将漫反射后计算的颜色加上环境光颜色（一般为光源颜色的几十分之一倍，看具体情况）赋值给片段着色器的输出值即可。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FragColor = vec4((diffuse + <span class="number">0.1</span>) * lightColor),<span class="number">1.0f</span>);</span><br></pre></td></tr></table></figure>
+<p><img src="https://ws2.sinaimg.cn/large/006tNc79ly1foohvap5cmj31kk0zk3zp.jpg" alt="WX20180221-232646@2x"></p>
+<p>&emsp;&emsp;处理完漫反射后我们可以看看镜面光照，和漫反射光照一样，镜面光照也是依据光的方向向量和物体的法向量来决定的，但是它也依赖于观察方向，例如玩家是从什么方向看着这个片段的。镜面光照是基于光的反射特性。如果我们想象物体表面像一面镜子一样，那么，无论我们从哪里去看那个表面所反射的光，镜面光照都会达到最大化。你可以从下面的图片看到效果：</p>
+<p><img src="https://ws4.sinaimg.cn/large/006tNc79ly1foohvbndn8j30cf08yq31.jpg" alt="2222222"></p>
+<p>&emsp;&emsp;我们通过反射法向量周围光的方向来计算反射向量。然后我们计算反射向量和视线方向的角度差，如果夹角越小，那么镜面光的影响就会越大。它的作用效果就是，当我们去看光被物体所反射的那个方向的时候，我们会看到一个高光。</p>
+<p>&emsp;&emsp;观察向量是镜面光照附加的一个变量，我们可以使用观察者世界空间位置和片段的位置来计算它。之后，我们计算镜面光强度，用它乘以光源的颜色，再将它加上环境光和漫反射分量。</p>
+<p>&emsp;&emsp;我们使用摄像机坐标作为观察者坐标，在片段着色器中设立一个Uniform变量，并在OpenGL代码里将摄像机坐标传入进去</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uniform vec3 viewPos;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;定义一个镜面的反射强度，并用片段坐标减去观察点坐标得到我们的视线方向，通过 reflect 方法得到反射向量（传入参数为入射向量和法线向量，注意入射向量的方向是从光源到片段点）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> specularStrength = <span class="number">0.5</span>;</span><br><span class="line">vec3 viewDir = normalize(viewPos - FragPos);</span><br><span class="line">vec3 reflectDir = reflect(FragPos-lightPos, norm);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后计算镜面分量，并将其与之前的漫反射光分量和环境光分量加起来乘光源颜色，就得到了最后要赋值的片段颜色：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> spec = <span class="built_in">pow</span>(max(dot(viewDir, reflectDir), <span class="number">0.0</span>), <span class="number">32</span>);</span><br><span class="line">vec3 specular = specularStrength * spec * lightColor;</span><br><span class="line"></span><br><span class="line">   vec3 result = (ambient + diffuse + specular) * objectColor;</span><br><span class="line">   FragColor = vec4(result , <span class="number">1.0</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<a href="https://youtu.be/SDjfKkhRzOo" target="_blank" rel="noopener">最终效果看Youtube</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/OpenGL/" rel="tag"> OpenGL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/20/【OpenGL】10-摄像机/" rel="next" title="【OpenGL】10-摄像机">
+                <i class="fa fa-chevron-left"></i> 【OpenGL】10-摄像机
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/01/Rotated-Digits【好久没写代码了】/" rel="prev" title="Rotated-Digits【好久没写代码了】">
+                Rotated-Digits【好久没写代码了】 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考教程"><span class="nav-number">1.</span> <span class="nav-text">参考教程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学习心得"><span class="nav-number">2.</span> <span class="nav-text">学习心得</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【OpenGL】11-光照',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

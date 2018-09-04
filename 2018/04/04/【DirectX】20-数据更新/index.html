@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;这篇文章中，我们将介绍一些比较简单的内容，主要是对于之前代码的一些修改。在之前我们的代码中，例如 【directx】18-fps与cpu使用率 这一篇中。由于帧数和 cpu 使用率的数值是不断变化的，所以我们需要实时的生成不一样的顶点数据，这样程序会在每一帧运行的时候去申请一段空间，然后送给 GPU 。虽然我们也自己处理了一部分的内存释放，例如在申请 vertex 数组前先">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】20-数据更新">
+<meta property="og:url" content="https://blog.ksgin.com/2018/04/04/【DirectX】20-数据更新/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;这篇文章中，我们将介绍一些比较简单的内容，主要是对于之前代码的一些修改。在之前我们的代码中，例如 【directx】18-fps与cpu使用率 这一篇中。由于帧数和 cpu 使用率的数值是不断变化的，所以我们需要实时的生成不一样的顶点数据，这样程序会在每一帧运行的时候去申请一段空间，然后送给 GPU 。虽然我们也自己处理了一部分的内存释放，例如在申请 vertex 数组前先">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.281Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】20-数据更新">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;这篇文章中，我们将介绍一些比较简单的内容，主要是对于之前代码的一些修改。在之前我们的代码中，例如 【directx】18-fps与cpu使用率 这一篇中。由于帧数和 cpu 使用率的数值是不断变化的，所以我们需要实时的生成不一样的顶点数据，这样程序会在每一帧运行的时候去申请一段空间，然后送给 GPU 。虽然我们也自己处理了一部分的内存释放，例如在申请 vertex 数组前先">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】20-数据更新 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/04/04/【DirectX】20-数据更新/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】20-数据更新</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-04T18:19:34+08:00">2018-04-04</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;&emsp;这篇文章中，我们将介绍一些比较简单的内容，主要是对于之前代码的一些修改。在之前我们的代码中，例如 <a href="https://blog.ksgin.com/2018/04/02/【directx】18-fps与cpu使用率/">【directx】18-fps与cpu使用率</a> 这一篇中。由于帧数和 cpu 使用率的数值是不断变化的，所以我们需要实时的生成不一样的顶点数据，这样程序会在每一帧运行的时候去申请一段空间，然后送给 GPU 。虽然我们也自己处理了一部分的内存释放，例如在申请 vertex 数组前先判断数组是否存在，存在的话先去释放它。但是也还是有很大的改进空间，这篇文章主要就是对这个进行更改。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;在此之前，我们对代码结构进行了部分重构处理。虽然没有去和很早之前一样去设计多个类，但是也将我们的部分代码进行了封装。等会你可以在文章下边提供的源代码网址里看到这些。</p>
+<p>&emsp;&emsp;然后，在此对于上边提到的改进，这次我们将不再重新去生成顶点缓冲，而是使用 DX 中提供的缓冲更新方法，我们首先初始化我们用来显示文字的顶点，使用的是 <code>InitSentenceVertexAndIndexBuffer</code> 方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> HRESULT <span class="title">InitSentenceVertexAndIndexBuffer</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">const</span> <span class="keyword">char</span> * sentence,</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">const</span> <span class="keyword">float</span> drawX,</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">const</span> <span class="keyword">float</span> drawY,</span></span></span><br><span class="line"><span class="function"><span class="params">	Font * fonts,</span></span></span><br><span class="line"><span class="function"><span class="params">	ID3D11Device * <span class="keyword">const</span> pDevice,</span></span></span><br><span class="line"><span class="function"><span class="params">	ID3D11Buffer **pVertexBufferObject,</span></span></span><br><span class="line"><span class="function"><span class="params">	ID3D11Buffer **pIndexBufferObject,</span></span></span><br><span class="line"><span class="function"><span class="params">	UINT &amp;nNumVertex,</span></span></span><br><span class="line"><span class="function"><span class="params">	Vertex *&amp;vertices,</span></span></span><br><span class="line"><span class="function"><span class="params">	UINT *&amp;indices)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (vertices) &#123;</span><br><span class="line">		<span class="keyword">delete</span>[] vertices;</span><br><span class="line">		vertices = <span class="literal">nullptr</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (indices) &#123;</span><br><span class="line">		<span class="keyword">delete</span>[] indices;</span><br><span class="line">		indices = <span class="literal">nullptr</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	HRESULT hr;</span><br><span class="line"></span><br><span class="line">	nNumVertex = <span class="built_in">strlen</span>(sentence) * <span class="number">6</span>;</span><br><span class="line">	vertices = <span class="keyword">new</span> Vertex[nNumVertex];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> idx = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">float</span> posX = drawX;</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">float</span> posY = drawY;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">auto</span> i = <span class="number">0</span>; i &lt; nNumVertex / <span class="number">6</span>; ++i) &#123;</span><br><span class="line">		<span class="keyword">const</span> Font letter = fonts[<span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(sentence[i]) - <span class="number">32</span>];</span><br><span class="line">		<span class="keyword">if</span> (sentence[i] - <span class="number">32</span> == <span class="number">0</span>) &#123;</span><br><span class="line">			posX += <span class="number">3</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX, posY, <span class="number">0.0f</span>);	<span class="comment">// 左上</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.left, <span class="number">0.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX + letter.size, posY - <span class="number">16</span>, <span class="number">0.0f</span>);	<span class="comment">// 右下</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.right, <span class="number">1.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX, posY - <span class="number">16</span>, <span class="number">0.0f</span>);	<span class="comment">// 左下</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.left, <span class="number">1.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX, posY, <span class="number">0.0f</span>);	<span class="comment">// 左上</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.left, <span class="number">0.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX + letter.size, posY, <span class="number">0.0f</span>);	<span class="comment">// 右上</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.right, <span class="number">0.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX + letter.size, posY - <span class="number">16</span>, <span class="number">0.0f</span>);	<span class="comment">// 右下</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.right, <span class="number">1.0f</span>);</span><br><span class="line">			posX += letter.size + <span class="number">1.0f</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	D3D11_BUFFER_DESC vertexBufferDesc;</span><br><span class="line">	ZeroMemory(&amp;vertexBufferDesc, <span class="keyword">sizeof</span>(vertexBufferDesc));</span><br><span class="line">	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;</span><br><span class="line">	vertexBufferDesc.ByteWidth = <span class="keyword">sizeof</span>(Vertex) * nNumVertex;</span><br><span class="line">	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;</span><br><span class="line">	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;</span><br><span class="line"></span><br><span class="line">	D3D11_SUBRESOURCE_DATA verticesSourceData;</span><br><span class="line">	ZeroMemory(&amp;verticesSourceData, <span class="keyword">sizeof</span>(D3D11_SUBRESOURCE_DATA));</span><br><span class="line">	verticesSourceData.pSysMem = vertices;</span><br><span class="line"></span><br><span class="line">	hr = pDevice-&gt;CreateBuffer(&amp;vertexBufferDesc, &amp;verticesSourceData, pVertexBufferObject);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> hr;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	indices = <span class="keyword">new</span> UINT[nNumVertex];</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">auto</span> i = <span class="number">0</span>; i &lt; nNumVertex; ++i) indices[i] = i;</span><br><span class="line"></span><br><span class="line">	D3D11_BUFFER_DESC indexDesc;</span><br><span class="line">	ZeroMemory(&amp;indexDesc, <span class="keyword">sizeof</span>(indexDesc));</span><br><span class="line">	indexDesc.Usage = D3D11_USAGE_DYNAMIC;</span><br><span class="line">	indexDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;</span><br><span class="line">	indexDesc.ByteWidth = <span class="keyword">sizeof</span>(UINT) * nNumVertex;</span><br><span class="line">    vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;</span><br><span class="line"></span><br><span class="line">	D3D11_SUBRESOURCE_DATA indexData;</span><br><span class="line">	ZeroMemory(&amp;indexData, <span class="keyword">sizeof</span>(indexData));</span><br><span class="line">	indexData.pSysMem = indices;</span><br><span class="line"></span><br><span class="line">	hr = pDevice-&gt;CreateBuffer(&amp;indexDesc, &amp;indexData, pIndexBufferObject);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> hr;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> S_OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;还可以看到的是我们在这个方法里没有去定义顶点缓冲和索引缓冲对象。那是因为我们将它转移到了主函数里，使用二级指针传入进来为其赋值，这样可以使得我们的函数尽量的 “干净” 一些，也可以在主函数里统一的声明和释放指针。</p>
+<p>&emsp;&emsp;之前我们是频繁的使用这个方法来生成顶点数据，生成顶点缓冲，然后绑定到立即上下文设备对象中，现在我们设计了一个新方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> HRESULT <span class="title">UpdateSentenceVertexAndIndexBuffer</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">const</span> <span class="keyword">char</span> * sentence,</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">const</span> <span class="keyword">float</span> drawX,</span></span></span><br><span class="line"><span class="function"><span class="params">	<span class="keyword">const</span> <span class="keyword">float</span> drawY,</span></span></span><br><span class="line"><span class="function"><span class="params">	Font * fonts,</span></span></span><br><span class="line"><span class="function"><span class="params">	ID3D11Buffer **pVertexBufferObject,</span></span></span><br><span class="line"><span class="function"><span class="params">	ID3D11Buffer **pIndexBufferObject,</span></span></span><br><span class="line"><span class="function"><span class="params">	ID3D11DeviceContext **pImmediateContext,</span></span></span><br><span class="line"><span class="function"><span class="params">	UINT &amp;nNumVertex,</span></span></span><br><span class="line"><span class="function"><span class="params">	Vertex *&amp;vertices,</span></span></span><br><span class="line"><span class="function"><span class="params">	UINT *&amp;indices)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (vertices) &#123;</span><br><span class="line">		<span class="keyword">delete</span>[] vertices;</span><br><span class="line">		vertices = <span class="literal">nullptr</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (indices) &#123;</span><br><span class="line">		<span class="keyword">delete</span>[] indices;</span><br><span class="line">		indices = <span class="literal">nullptr</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	HRESULT hr;</span><br><span class="line"></span><br><span class="line">	nNumVertex = <span class="built_in">strlen</span>(sentence) * <span class="number">6</span>;</span><br><span class="line">	vertices = <span class="keyword">new</span> Vertex[nNumVertex];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> idx = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">float</span> posX = drawX;</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">float</span> posY = drawY;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">auto</span> i = <span class="number">0</span>; i &lt; nNumVertex / <span class="number">6</span>; ++i) &#123;</span><br><span class="line">		<span class="keyword">const</span> Font letter = fonts[<span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(sentence[i]) - <span class="number">32</span>];</span><br><span class="line">		<span class="keyword">if</span> (sentence[i] - <span class="number">32</span> == <span class="number">0</span>) &#123;</span><br><span class="line">			posX += <span class="number">3</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX, posY, <span class="number">0.0f</span>);	<span class="comment">// 左上</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.left, <span class="number">0.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX + letter.size, posY - <span class="number">16</span>, <span class="number">0.0f</span>);	<span class="comment">// 右下</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.right, <span class="number">1.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX, posY - <span class="number">16</span>, <span class="number">0.0f</span>);	<span class="comment">// 左下</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.left, <span class="number">1.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX, posY, <span class="number">0.0f</span>);	<span class="comment">// 左上</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.left, <span class="number">0.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX + letter.size, posY, <span class="number">0.0f</span>);	<span class="comment">// 右上</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.right, <span class="number">0.0f</span>);</span><br><span class="line">			vertices[idx].pos = XMFLOAT3(posX + letter.size, posY - <span class="number">16</span>, <span class="number">0.0f</span>);	<span class="comment">// 右下</span></span><br><span class="line">			vertices[idx++].tex = XMFLOAT2(letter.right, <span class="number">1.0f</span>);</span><br><span class="line">			posX += letter.size + <span class="number">1.0f</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	indices = <span class="keyword">new</span> UINT[nNumVertex];</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">auto</span> i = <span class="number">0</span>; i &lt; nNumVertex; ++i) indices[i] = i;</span><br><span class="line"></span><br><span class="line">	D3D11_MAPPED_SUBRESOURCE dms;</span><br><span class="line">	hr = (*pImmediateContext)-&gt;Map(*pVertexBufferObject, <span class="number">0</span>, D3D11_MAP_WRITE_DISCARD, <span class="number">0</span>, &amp;dms);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">		<span class="keyword">return</span> hr;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">auto</span> *vertexPtr = <span class="keyword">static_cast</span>&lt;Vertex*&gt;(dms.pData);</span><br><span class="line">	<span class="built_in">memcpy</span>(vertexPtr, vertices, <span class="keyword">sizeof</span>(Vertex) * nNumVertex);</span><br><span class="line">	(*pImmediateContext)-&gt;Unmap(*pVertexBufferObject, <span class="number">0</span>);</span><br><span class="line">	hr = (*pImmediateContext)-&gt;Map(*pIndexBufferObject, <span class="number">0</span>, D3D11_MAP_WRITE_DISCARD, <span class="number">0</span>, &amp;dms);</span><br><span class="line">	<span class="keyword">if</span> (FAILED(hr)) &#123;</span><br><span class="line">		<span class="keyword">return</span> hr;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">auto</span> *indexPtr = <span class="keyword">static_cast</span>&lt;UINT*&gt;(dms.pData);</span><br><span class="line">	<span class="built_in">memcpy</span>(indexPtr, indices, <span class="keyword">sizeof</span>(UINT) * nNumVertex);</span><br><span class="line">	(*pImmediateContext)-&gt;Unmap(*pIndexBufferObject, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> S_OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;事实上，这两个方法虽然一个为初始化一个为更新，但是内部含有大量的重复代码，这仍然是我们可以优化的一部分，在此我们暂且不对它进行修改，因为这个并不是重点。</p>
+<p>&emsp;&emsp;可以看到，下边的方法中我们没有去使用顶点创建缓冲，而是使用上下文对象的方法来将缓冲中数据映射到一个指针上，然后通过拷贝将数据拷贝到缓冲里。通过这样我们可以去实时的修改顶点数据。同时还需要注意的地方是，如果我们需要更新数据，那么在初始化顶点缓冲的时候就需要一定的配置更改了，请注意一下我们上边初始化缓冲的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;</span><br><span class="line">vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们修改了顶点缓冲描述的 <code>Usage</code> 和 <code>CPUAccessFlags</code> 两个值。</p>
+<p>&emsp;&emsp;同时正如上边所说，我们将几乎所有的指针对象的声明和释放都放到了主函数里，这样可以避免很多的函数中内存泄漏。如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//////////////////////////////////////// declare //////////////////////////////////////</span></span><br><span class="line">ID3D11RenderTargetView			*pD3DRenderTargetView = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11Device					*pD3DDevice = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11DeviceContext				*pD3DImmediateContext = <span class="literal">nullptr</span>;</span><br><span class="line">IDXGISwapChain					*pD3DSwapChain = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11DepthStencilView			*pDepthStencilView = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11DepthStencilState			*pDisableDepthStencilState = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11DepthStencilState			*pEnableDepthStencilState = <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> UINT cubeVertexNum = <span class="number">36</span>;</span><br><span class="line">ID3D11SamplerState				*pCubeSamplerState = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11ShaderResourceView		*pCubeShaderResourceView = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11Buffer					*pCubeVertexBufferObject = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11Buffer					*pCubeIndexBufferObject = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11Buffer					*pMatrixDBuffer3D = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11Buffer					*pMatrixDBuffer2D = <span class="literal">nullptr</span>;</span><br><span class="line">Vertex							*cubeVertice = <span class="literal">nullptr</span>;</span><br><span class="line">UINT							*cubeIndices = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11VertexShader				*pCubeVertexShader = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11PixelShader				*pCubePixelShader = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11InputLayout				*pCubeInputLayout = <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line">UINT sentenceVertexNum = <span class="number">0</span>;</span><br><span class="line">Font							*fonts = <span class="literal">nullptr</span>;</span><br><span class="line">Vertex							*fontVertice = <span class="literal">nullptr</span>;</span><br><span class="line">UINT							*fontIndices = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11Buffer					*pFontVertexBufferObject = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11Buffer					*pFontIndexBufferObject = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11VertexShader				*pFontVertexShader = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11PixelShader				*pFontPixelShader = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11InputLayout				*pFontInputLayout = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11SamplerState				*pFontSamplerState = <span class="literal">nullptr</span>;</span><br><span class="line">ID3D11ShaderResourceView		*pFontShaderResourceView = <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//////////////////////////////////////// use //////////////////////////////////////////////</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//////////////////////////////////////// release /////////////////////////////////////////</span></span><br><span class="line"><span class="keyword">if</span> (pD3DRenderTargetView) pD3DRenderTargetView-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pD3DDevice) pD3DDevice-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pD3DImmediateContext) pD3DImmediateContext-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pD3DSwapChain) pD3DSwapChain-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pDepthStencilView) pDepthStencilView-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pDisableDepthStencilState) pDisableDepthStencilState-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pEnableDepthStencilState) pEnableDepthStencilState-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pCubeSamplerState) pCubeSamplerState-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pCubeShaderResourceView) pCubeShaderResourceView-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pCubeVertexBufferObject) pCubeVertexBufferObject-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pCubeIndexBufferObject) pCubeIndexBufferObject-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pMatrixDBuffer3D) pMatrixDBuffer3D-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pMatrixDBuffer2D) pMatrixDBuffer2D-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pCubeVertexShader) pCubeVertexShader-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pCubePixelShader) pCubePixelShader-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pCubeInputLayout) pCubeInputLayout-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pFontVertexBufferObject) pFontVertexBufferObject-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pFontIndexBufferObject) pFontIndexBufferObject-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pFontVertexShader) pFontVertexShader-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pFontPixelShader) pFontPixelShader-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pFontInputLayout) pFontInputLayout-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pFontSamplerState) pFontSamplerState-&gt;Release();</span><br><span class="line"><span class="keyword">if</span> (pFontShaderResourceView) pFontShaderResourceView-&gt;Release();</span><br><span class="line"><span class="keyword">delete</span> fonts;</span><br><span class="line"><span class="keyword">delete</span>[] fontVertice;</span><br><span class="line"><span class="keyword">delete</span>[] fontIndices;</span><br><span class="line"><span class="keyword">delete</span>[] cubeVertice;</span><br><span class="line"><span class="keyword">delete</span>[] cubeIndices;</span><br><span class="line">PdhCloseQuery(hQuery);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如此，在程序运行起来后，我们的程序内存始终可以保持在一个可观的地步。下一篇中我们将去绘制及其多的 3d 模型并介绍对于 3d 场景下的视锥裁剪问题。这篇文章的代码也是和它在一起的。</p>
+<p>&emsp;&emsp;源代码：<a href="https://github.com/KsGin/DX11Tutorial/tree/master/DX11Tutorial-FrustumCulling" target="_blank" rel="noopener">DX11Tutorial-FrustumCulling</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/04/Jump-Game/" rel="next" title="Jump-Game">
+                <i class="fa fa-chevron-left"></i> Jump-Game
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/06/【DirectX】21-视锥裁剪/" rel="prev" title="【DirectX】21-视锥裁剪">
+                【DirectX】21-视锥裁剪 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】20-数据更新',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

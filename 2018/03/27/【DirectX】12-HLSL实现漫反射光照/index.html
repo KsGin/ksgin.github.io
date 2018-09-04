@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;这篇文章中，我们将实现在 HLSL 下的漫反射光照绘制。漫反射的原理我们在 OpenGL 学习笔记中已经详细提及，这里就省下篇幅了。">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】12-HLSL实现漫反射光照">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/27/【DirectX】12-HLSL实现漫反射光照/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;这篇文章中，我们将实现在 HLSL 下的漫反射光照绘制。漫反射的原理我们在 OpenGL 学习笔记中已经详细提及，这里就省下篇幅了。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://image.ibb.co/kF2Xc7/image.png">
+<meta property="og:image" content="https://image.ibb.co/bxRdjn/image.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.279Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】12-HLSL实现漫反射光照">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;这篇文章中，我们将实现在 HLSL 下的漫反射光照绘制。漫反射的原理我们在 OpenGL 学习笔记中已经详细提及，这里就省下篇幅了。">
+<meta name="twitter:image" content="https://image.ibb.co/kF2Xc7/image.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】12-HLSL实现漫反射光照 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/27/【DirectX】12-HLSL实现漫反射光照/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】12-HLSL实现漫反射光照</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-27T14:47:18+08:00">2018-03-27</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;&emsp;这篇文章中，我们将实现在 HLSL 下的漫反射光照绘制。漫反射的原理我们在 OpenGL 学习笔记中已经详细提及，这里就省下篇幅了。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;首先我们修改之前的立方体代码来给漫反射光照做准备。我们将绘制一个缓慢转动的立方体模型并为他贴图，然后我们需要一个光源，使用一个比较小的白色立方体代替。</p>
+<p>&emsp;&emsp;重新定义顶点数据结构：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Vertex</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	XMFLOAT3 pos;</span><br><span class="line">	XMFLOAT2 texcoord;</span><br><span class="line">	XMFLOAT3 normal;	<span class="comment">// 计算漫反射光需要用到法线</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;之后，我们更改立方体的顶点（由于法线的原因，导致我们会将顶点的个数扩展到24个），并且更新索引：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">	Vertex vertices[] = &#123;</span><br><span class="line">		<span class="comment">// 正面</span></span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , <span class="number">-1.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, +<span class="number">0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , <span class="number">-1.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, +<span class="number">0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , <span class="number">-1.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , <span class="number">-1.0f</span>)&#125;,</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 背面</span></span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, <span class="number">-0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , +<span class="number">1.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, +<span class="number">0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , +<span class="number">1.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, +<span class="number">0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , +<span class="number">1.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, <span class="number">-0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">0.0f</span> , +<span class="number">1.0f</span>)&#125;,</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 上面</span></span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, +<span class="number">0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , +<span class="number">1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, +<span class="number">0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , +<span class="number">1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, +<span class="number">0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , +<span class="number">1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, +<span class="number">0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , +<span class="number">1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 下面</span></span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">-1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, <span class="number">-0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">-1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, <span class="number">-0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">-1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">0.0f</span> , <span class="number">-1.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 左侧</span></span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, <span class="number">-0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">-1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, +<span class="number">0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">-1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, +<span class="number">0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">0</span>) , XMFLOAT3(<span class="number">-1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(<span class="number">-0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">1</span>) , XMFLOAT3(<span class="number">-1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 右侧</span></span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, <span class="number">-0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">1</span>) , XMFLOAT3(+<span class="number">1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, +<span class="number">0.5f</span>, <span class="number">-0.5f</span>), XMFLOAT2(<span class="number">0</span>, <span class="number">0</span>) , XMFLOAT3(+<span class="number">1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, +<span class="number">0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">0</span>) , XMFLOAT3(+<span class="number">1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">		&#123; XMFLOAT3(+<span class="number">0.5f</span>, <span class="number">-0.5f</span>, +<span class="number">0.5f</span>), XMFLOAT2(<span class="number">1</span>, <span class="number">1</span>) , XMFLOAT3(+<span class="number">1.0f</span> , <span class="number">0.0f</span> , <span class="number">0.0f</span>)&#125;,</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">UINT indices[] = &#123;</span><br><span class="line">		<span class="comment">// 前</span></span><br><span class="line">		<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>,</span><br><span class="line">		<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>,</span><br><span class="line">		<span class="comment">// 后</span></span><br><span class="line">		<span class="number">4</span>, <span class="number">6</span>, <span class="number">5</span>,</span><br><span class="line">		<span class="number">4</span>, <span class="number">7</span>, <span class="number">6</span>,</span><br><span class="line">		<span class="comment">// 左</span></span><br><span class="line">		<span class="number">16</span>, <span class="number">17</span>, <span class="number">18</span>,</span><br><span class="line">		<span class="number">16</span>, <span class="number">18</span>, <span class="number">19</span>,</span><br><span class="line">		<span class="comment">// 右</span></span><br><span class="line">		<span class="number">20</span>, <span class="number">21</span>, <span class="number">22</span>,</span><br><span class="line">		<span class="number">20</span>, <span class="number">22</span>, <span class="number">23</span>,</span><br><span class="line">		<span class="comment">// 上</span></span><br><span class="line">		<span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>,</span><br><span class="line">		<span class="number">8</span>, <span class="number">10</span>, <span class="number">11</span>,</span><br><span class="line">		<span class="comment">// 下</span></span><br><span class="line">		<span class="number">12</span>, <span class="number">14</span>, <span class="number">13</span>,</span><br><span class="line">		<span class="number">12</span>, <span class="number">15</span>, <span class="number">14</span></span><br><span class="line">	&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这是我们绘制立方体的时候使用的新的数据（具体绘制过程有兴趣的可以去看源码），由于我们需要绘制光源，所以需要简单的光源立方体使用的着色器程序，如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lightVertexShader.hlsl</span></span><br><span class="line">cbuffer ConstantBuffer : <span class="keyword">register</span>(b0) &#123;</span><br><span class="line">	matrix world;</span><br><span class="line">	matrix view;</span><br><span class="line">	matrix projection;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">float4 main( float4 pos : POSITION ) : SV_POSITION&#123;</span><br><span class="line">	pos = mul(pos , world);</span><br><span class="line">	pos = mul(pos , view);</span><br><span class="line">	pos = mul(pos , projection);</span><br><span class="line">	<span class="keyword">return</span> pos;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//lightPixelShader.hlsl</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pixelInputType</span> &#123;</span></span><br><span class="line">	float4 pos : SV_POSITION;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">float4 main(float4 pos : SV_POSITION) : SV_TARGET&#123;</span><br><span class="line">	<span class="keyword">return</span> float4(<span class="number">1.0f</span>,<span class="number">1.0f</span>,<span class="number">1.0f</span>,<span class="number">1.0f</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在，进行绘制，同时使用 <code>XMMatrixRotation</code> 方法使其旋转：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">cubeWorld = cubeWorld * XMMatrixRotationX(<span class="number">0.0001f</span>) * XMMatrixRotationY(<span class="number">0.0001f</span>) * XMMatrixRotationZ(<span class="number">0.0001f</span>);</span><br><span class="line">cb.world = XMMatrixTranspose(cubeWorld);</span><br><span class="line">pImmediateContext-&gt;UpdateSubresource(pConstantBuffer, <span class="number">0</span>, <span class="literal">nullptr</span>, &amp;cb, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">pImmediateContext-&gt;VSSetConstantBuffers(<span class="number">0</span>, <span class="number">1</span>, &amp;pConstantBuffer);</span><br><span class="line">pImmediateContext-&gt;PSSetShaderResources(<span class="number">0</span>, <span class="number">1</span>, &amp;pShaderResourceView);</span><br><span class="line">pImmediateContext-&gt;PSSetSamplers(<span class="number">0</span>, <span class="number">1</span>, &amp;pSamplerState);</span><br><span class="line">pImmediateContext-&gt;IASetInputLayout(pCubeInputLayout);</span><br><span class="line">pImmediateContext-&gt;VSSetShader(pCubeVertexShader, <span class="literal">nullptr</span>, <span class="number">0</span>);</span><br><span class="line">pImmediateContext-&gt;PSSetShader(pCubePixelShader, <span class="literal">nullptr</span>, <span class="number">0</span>);</span><br><span class="line">pImmediateContext-&gt;DrawIndexed(<span class="number">36</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">cb.world = XMMatrixTranspose(lightWorld * XMMatrixTranslation(<span class="number">0.0f</span>, <span class="number">3.0f</span>, <span class="number">0.0f</span>));</span><br><span class="line">pImmediateContext-&gt;UpdateSubresource(pConstantBuffer, <span class="number">0</span>, <span class="literal">nullptr</span>, &amp;cb, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">pImmediateContext-&gt;VSSetConstantBuffers(<span class="number">0</span>, <span class="number">1</span>, &amp;pConstantBuffer);</span><br><span class="line">pImmediateContext-&gt;IASetInputLayout(pLightInputLayout);</span><br><span class="line">pImmediateContext-&gt;VSSetShader(pLightVertexShader, <span class="literal">nullptr</span>, <span class="number">0</span>);</span><br><span class="line">pImmediateContext-&gt;PSSetShader(pLightPixelShader, <span class="literal">nullptr</span>, <span class="number">0</span>);</span><br><span class="line">pImmediateContext-&gt;DrawIndexed(<span class="number">36</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;现在你应该看到的是一个旋转的立方体和一个在立方体上方的光源，如下：</p>
+<p><img src="https://image.ibb.co/kF2Xc7/image.png" alt="1"></p>
+<p>&emsp;&emsp;接下来就是 HLSL 中的代码了。首先修改顶点着色器的数据结构：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vertexInputType</span> &#123;</span></span><br><span class="line">	float4 pos : POSITION;</span><br><span class="line">	float2 texcoord : TEXCOORD0;</span><br><span class="line">	float3 normal : NORMAL;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pixelInputType</span> &#123;</span></span><br><span class="line">	float4 pos : SV_POSITION;</span><br><span class="line">	float4 posw : POSITION1;	<span class="comment">// 使用这个坐标来计算光方向向量</span></span><br><span class="line">	float2 texcoord : TEXCOORD0;</span><br><span class="line">	float3 normal : NORMAL;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;同时在对顶点着色器中变换坐标的同时也变换法线坐标：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">pixelInputType <span class="title">main</span><span class="params">( vertexInputType input )</span></span>&#123;</span><br><span class="line">	pixelInputType output;</span><br><span class="line">	output.pos = input.pos;</span><br><span class="line">	output.pos = mul(output.pos , world);</span><br><span class="line">	output.pos = mul(output.pos , view);</span><br><span class="line">	output.pos = mul(output.pos , projection);</span><br><span class="line">	output.texcoord = input.texcoord;</span><br><span class="line">	output.normal = mul(input.normal , (float3x3)world); <span class="comment">// normal</span></span><br><span class="line">	<span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;有了法线之后，我们可以在像素着色器中根据法线与光照方向的夹角 cos 值来计算颜色了。首先我们使用硬编码写好光源位置和环境光大小：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> ambient = <span class="number">0.1f</span>;</span><br><span class="line">float3 lightPos = float3(<span class="number">0.0f</span>, <span class="number">3.0f</span>, <span class="number">0.0f</span>);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;之后计算光照方向：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">float3 lightDir = - lightPos;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后，使用光照方向的反向量来和法线向量点乘获得 cos 值：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> diffuse = saturate(dot(normalize(input.normal), normalize(-lightDir))); <span class="comment">// staturate 将其值限制在 0  1 区间内</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;配合纹理颜色和环境光颜色来计算最终颜色：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> tex.Sample(samp , input.texcoord) * (ambient + diffuse);</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最终效果如下：</p>
+<p><img src="https://image.ibb.co/bxRdjn/image.png" alt="1"></p>
+<p>&emsp;&emsp;源代码地址：<a href="https://github.com/KsGin/DX11Tutorial/tree/master/DX11Tutorial-DiffuseLighting" target="_blank" rel="noopener">DX11Tutorial DiffuseLighting</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/27/Binary-Tree-Level-Order-Traversal-II/" rel="next" title="Binary-Tree-Level-Order-Traversal-II">
+                <i class="fa fa-chevron-left"></i> Binary-Tree-Level-Order-Traversal-II
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/27/【DirectX】13-Assimp库/" rel="prev" title="【DirectX】13-Assimp库">
+                【DirectX】13-Assimp库 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】12-HLSL实现漫反射光照',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;在上一篇文章中我们了解了 Assimp 这个库，但是只知道这个库只是作为一个加载的作用，并不清楚如何使用，这这一篇便是介绍  Assimp 的数据结构以及我们自己创建的两个为方便使用它而创建的类。">
+<meta name="keywords" content="Computer graphics,OpenGL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【OpenGL】13-Mesh与Model类">
+<meta property="og:url" content="https://blog.ksgin.com/2018/03/05/【OpenGL】13-Mesh与Model类/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;在上一篇文章中我们了解了 Assimp 这个库，但是只知道这个库只是作为一个加载的作用，并不清楚如何使用，这这一篇便是介绍  Assimp 的数据结构以及我们自己创建的两个为方便使用它而创建的类。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fp1v7m6m24j30m80crdh0.jpg">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.289Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【OpenGL】13-Mesh与Model类">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;在上一篇文章中我们了解了 Assimp 这个库，但是只知道这个库只是作为一个加载的作用，并不清楚如何使用，这这一篇便是介绍  Assimp 的数据结构以及我们自己创建的两个为方便使用它而创建的类。">
+<meta name="twitter:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fp1v7m6m24j30m80crdh0.jpg">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【OpenGL】13-Mesh与Model类 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/03/05/【OpenGL】13-Mesh与Model类/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【OpenGL】13-Mesh与Model类</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-05T08:53:09+08:00">2018-03-05</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;&emsp;在上一篇文章中我们了解了 Assimp 这个库，但是只知道这个库只是作为一个加载的作用，并不清楚如何使用，这这一篇便是介绍  Assimp 的数据结构以及我们自己创建的两个为方便使用它而创建的类。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;首先看一下 Assimp 的结构图：</p>
+<p><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fp1v7m6m24j30m80crdh0.jpg" alt="assimp_structure"></p>
+<p>&emsp;&emsp;Assimp 读取模型文件后，会将其加载到一套通用的数据结构中，如上图所示，首先是一个 Scene 对象，对象中包括了多个场景对象，各个对象以树状结构展开，而 Scene 中储存了根节点 mRootNode。mMeshes 和 mMatertials 则是存储了模型的 Mesh（网格：代表一个可绘制的实体）与 Material（材质）数据，每一个 Children（子节点） 包括了它的孩子节点集合和网格（Mesh）索引集合，注意 Child Node 中的 Mesh 集合中存储的是 Scene 对象里的 Mesh 数组的索引，也就是说具体数据是在 Scene 中存储的，这里只有索引。</p>
+<p>&emsp;&emsp;除了 Scene 对象之外，便是代表具体网格数据的 Mesh 对象了，Mesh 对象存储了网格的顶点位置（mVertices）、法向量（mNormals）、纹理坐标（mTetureCoords）、面(mFaces)和物体的材质索引（mMaterialIndex），材质数据则是在在 Scene 对象的 mMaterials[] 中存储。</p>
+<p>&emsp;&emsp;在了解了 Assimp 的通用数据结构后，我们就可以从 Scene 对象中接收数据了。首先构造一个我们自己的 Mesh 类，用来直接进行 Mesh 的绘制工作。在此之前仍需要定义好两个东西，Vertex 与 Texture 。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Vertex</span> &#123;</span></span><br><span class="line">    glm::vec3 Position;</span><br><span class="line">    glm::vec3 Normal;</span><br><span class="line">    glm::vec2 TextCoords; <span class="comment">//U V</span></span><br><span class="line">    glm::vec3 Tangent;</span><br><span class="line">    glm::vec3 Bitangent;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Texture</span> &#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> id;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> type;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> path;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Mesh</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">/*网格数据*/</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Vertex&gt; vertices;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; indices;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; textures;</span><br><span class="line">    <span class="comment">/*方法*/</span></span><br><span class="line">    Mesh(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Vertex&gt; vertices , <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; indices , <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; textures);</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Draw</span><span class="params">(Shader shader)</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> VAO;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> VBO , EBO;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setupMesh</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们定义了公开的包括顶点 Vertex（顶点中定义了位置，法线等等），索引以及纹理，同时留下了构造方法以及 Draw 绘制接口 。而 Private 则是定义了我们在构造或者绘制过程中需要做的一些事。以下来看具体实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">Mesh::Mesh(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Vertex&gt; vertices, <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; indices, <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; textures) &#123;</span><br><span class="line">    <span class="keyword">this</span>-&gt;vertices = vertices;</span><br><span class="line">    <span class="keyword">this</span>-&gt;indices = indices;</span><br><span class="line">    <span class="keyword">this</span>-&gt;textures = textures;</span><br><span class="line"></span><br><span class="line">    setupMesh();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> Mesh::setupMesh() &#123;</span><br><span class="line">    glGenVertexArrays(<span class="number">1</span>, &amp;VAO);</span><br><span class="line">    glGenBuffers(<span class="number">1</span>, &amp;VBO);</span><br><span class="line">    glGenBuffers(<span class="number">1</span>, &amp;EBO);</span><br><span class="line"></span><br><span class="line">    glBindVertexArray(VAO);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//VBO</span></span><br><span class="line">    glBindBuffer(GL_ARRAY_BUFFER, VBO);</span><br><span class="line">    glBufferData(GL_ARRAY_BUFFER, vertices.size() * <span class="keyword">sizeof</span>(Vertex), &amp;vertices[<span class="number">0</span>], GL_STATIC_DRAW);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//EBO</span></span><br><span class="line">    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);</span><br><span class="line">    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * <span class="keyword">sizeof</span>(<span class="keyword">unsigned</span> <span class="keyword">int</span>), &amp;indices[<span class="number">0</span>], GL_STATIC_DRAW);</span><br><span class="line"></span><br><span class="line">    glEnableVertexAttribArray(<span class="number">0</span>);</span><br><span class="line">    glVertexAttribPointer(<span class="number">0</span>, <span class="number">3</span>, GL_FLOAT, GL_FALSE, <span class="keyword">sizeof</span>(Vertex), (<span class="keyword">void</span> *) <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    glEnableVertexAttribArray(<span class="number">1</span>);</span><br><span class="line">    glVertexAttribPointer(<span class="number">1</span>, <span class="number">3</span>, GL_FLOAT, GL_FALSE, <span class="keyword">sizeof</span>(Vertex), (<span class="keyword">void</span> *)offsetof(Vertex,Normal));</span><br><span class="line"></span><br><span class="line">    glEnableVertexAttribArray(<span class="number">2</span>);</span><br><span class="line">    glVertexAttribPointer(<span class="number">2</span>, <span class="number">3</span>, GL_FLOAT, GL_FALSE, <span class="keyword">sizeof</span>(Vertex), (<span class="keyword">void</span> *)offsetof(Vertex,TextCoords));</span><br><span class="line"></span><br><span class="line">    glEnableVertexAttribArray(<span class="number">3</span>);</span><br><span class="line">    glVertexAttribPointer(<span class="number">3</span>, <span class="number">3</span>, GL_FLOAT, GL_FALSE, <span class="keyword">sizeof</span>(Vertex), (<span class="keyword">void</span>*)offsetof(Vertex, Tangent));</span><br><span class="line"></span><br><span class="line">    glEnableVertexAttribArray(<span class="number">4</span>);</span><br><span class="line">    glVertexAttribPointer(<span class="number">4</span>, <span class="number">3</span>, GL_FLOAT, GL_FALSE, <span class="keyword">sizeof</span>(Vertex), (<span class="keyword">void</span>*)offsetof(Vertex, Bitangent));</span><br><span class="line"></span><br><span class="line">    glBindVertexArray(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> Mesh::Draw(Shader shader) &#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> diffuseNr  = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> specularNr = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> normalNr   = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> heightNr   = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; textures.size(); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        glActiveTexture(GL_TEXTURE0 + i); <span class="comment">// active proper texture unit before binding</span></span><br><span class="line">        <span class="comment">// retrieve texture number (the N in diffuse_textureN)</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> number;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">string</span> name = textures[i].type;</span><br><span class="line">        <span class="keyword">if</span>(name == <span class="string">"texture_diffuse"</span>)</span><br><span class="line">            number = <span class="built_in">std</span>::to_string(diffuseNr++);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(name == <span class="string">"texture_specular"</span>)</span><br><span class="line">            number = <span class="built_in">std</span>::to_string(specularNr++); <span class="comment">// transfer unsigned int to stream</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(name == <span class="string">"texture_normal"</span>)</span><br><span class="line">            number = <span class="built_in">std</span>::to_string(normalNr++); <span class="comment">// transfer unsigned int to stream</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(name == <span class="string">"texture_height"</span>)</span><br><span class="line">            number = <span class="built_in">std</span>::to_string(heightNr++); <span class="comment">// transfer unsigned int to stream</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// now set the sampler to the correct texture unit</span></span><br><span class="line">        glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);</span><br><span class="line">        <span class="comment">// and finally bind the texture</span></span><br><span class="line">        glBindTexture(GL_TEXTURE_2D, textures[i].id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// draw mesh</span></span><br><span class="line">    glBindVertexArray(VAO);</span><br><span class="line">    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, <span class="number">0</span>);</span><br><span class="line">    glBindVertexArray(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// always good practice to set everything back to defaults once configured.</span></span><br><span class="line">    glActiveTexture(GL_TEXTURE0);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;实现的内容没有多少难度，Mesh 的构造中就是复制以及我们之前学过的绑定顶点对象以及填充数据等，  Draw 方法传入一个 Shader（着色器对象），并读取纹理贴图后为 Shader 对象的属性赋值以及绘制等。</p>
+<p>&emsp;&emsp;暂时明白了 Mesh 的实现，接下来看看将 Scene 解析并将所有 Mesh 绘制的 Model 类：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Model</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Model(<span class="keyword">char</span> *path , <span class="keyword">bool</span> gamma = <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Darw</span><span class="params">(Shader shader)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Mesh&gt; meshes;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line"></span><br><span class="line">    <span class="keyword">bool</span> gammaCorrection;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> directory;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; textures_loaded;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">loadModel</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">string</span> path)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">processNode</span><span class="params">(aiNode *node, <span class="keyword">const</span> aiScene *scene)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Mesh <span class="title">processMesh</span><span class="params">(aiMesh *mesh, <span class="keyword">const</span> aiScene *scene)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; loadMaterialTextures(aiMaterial *mat, aiTextureType type, <span class="built_in">std</span>::<span class="built_in">string</span> typeName);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;Mesh 中已经完成了对网格的操作，而在 Model 中我们的重点仅仅是将 Scene 的属性按照数据结构解析并赋给 Mesh 而已，我们留下了构造方法已经绘制函数，绘制函数很简单，就是遍历 meshes 数组，挨个调用 mesh 对象的 draw 方法就可以了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Model::Darw(Shader shader) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;meshe : meshes) &#123;</span><br><span class="line">        meshe.Draw(shader);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;而构造方法则是层层调用解析函数，最外层是 loadModel 方法，在 loadModel 里使用 Assimp 读取 obj 文件以及贴图文件的文件夹地址，然后调用解析节点方法（processNode）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Model::Model(<span class="keyword">char</span> *path, <span class="keyword">bool</span> gamma) : gammaCorrection(gamma) &#123;</span><br><span class="line">    loadModel(path);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> Model::loadModel(<span class="built_in">std</span>::<span class="built_in">string</span> path) &#123;</span><br><span class="line">    Assimp::Importer importer;</span><br><span class="line">    <span class="keyword">const</span> aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace); <span class="comment">//翻转UV坐标</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!scene || scene-&gt;mFlags &amp; AI_SCENE_FLAGS_INCOMPLETE || !scene-&gt;mRootNode) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"ERROR::ASSIMP::"</span> &lt;&lt; importer.GetErrorString() &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    directory = path.substr(<span class="number">0</span>, path.find_last_of(<span class="string">'/'</span>));</span><br><span class="line"></span><br><span class="line">    processNode(scene-&gt;mRootNode, scene);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们之前说了，每个节点中存放的是 Mesh 在 Scene 对象里的数组的索引和子节点，所以 processNode 的实现则是依据索引解析 Mesh 对象并将其保存到 Model 的 meshes 数组里，同时递归子节点。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Model::processNode(aiNode *node, <span class="keyword">const</span> aiScene *scene) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; node-&gt;mNumMeshes; ++i) &#123;</span><br><span class="line">        aiMesh *mesh = scene-&gt;mMeshes[node-&gt;mMeshes[i]];</span><br><span class="line">        meshes.push_back(processMesh(mesh, scene));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; node-&gt;mNumChildren; ++i) &#123;</span><br><span class="line">        processNode(node-&gt;mChildren[i], scene);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;解析 Mesh 对象则是使用了 processMesh 方法，里边的内容也不难考虑，即将 assimp 的 Mesh 里存放的数据挨个转移到我们自定义的 Mesh 类对象里，包括顶点数据 Vertex 对象以及材质 Texture 对象，而 assimp 的Mesh 类只有材质的索引属性，所以需要我们调用读取材质的方法（loadMaterialTextures）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">Mesh Model::processMesh(aiMesh *mesh, <span class="keyword">const</span> aiScene *scene) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Vertex&gt; vertices;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; indices;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; textures;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Vertex</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mesh-&gt;mNumVertices; ++i) &#123;</span><br><span class="line"></span><br><span class="line">        Vertex vertex;</span><br><span class="line">        vertex.Position = glm::vec3(mesh-&gt;mVertices[i].x, mesh-&gt;mVertices[i].y, mesh-&gt;mVertices[i].z);</span><br><span class="line">        vertex.Normal = glm::vec3(mesh-&gt;mNormals[i].x, mesh-&gt;mNormals[i].y, mesh-&gt;mNormals[i].z);</span><br><span class="line">        <span class="keyword">if</span> (mesh-&gt;mTextureCoords[<span class="number">0</span>]) &#123;</span><br><span class="line">            vertex.TextCoords = glm::vec2(mesh-&gt;mTextureCoords[<span class="number">0</span>][i].x, mesh-&gt;mTextureCoords[<span class="number">0</span>][i].y);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            vertex.TextCoords = glm::vec2(<span class="number">0.0f</span>, <span class="number">0.0f</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(mesh-&gt;mTangents)&#123;</span><br><span class="line">            vertex.Tangent = glm::vec3(mesh-&gt;mTangents[i].x, mesh-&gt;mTangents[i].y, mesh-&gt;mTangents[i].z);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(mesh-&gt;mBitangents)&#123;</span><br><span class="line">            vertex.Bitangent = glm::vec3(mesh-&gt;mBitangents[i].x, mesh-&gt;mBitangents[i].y, mesh-&gt;mBitangents[i].z);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        vertices.push_back(vertex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Indices</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mesh-&gt;mNumFaces; ++i) &#123;</span><br><span class="line">        aiFace face = mesh-&gt;mFaces[i];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> j = <span class="number">0</span>; j &lt; face.mNumIndices; ++j) &#123;</span><br><span class="line">            indices.push_back(face.mIndices[j]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Textures</span></span><br><span class="line">    aiMaterial *material = scene-&gt;mMaterials[mesh-&gt;mMaterialIndex];</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; diffuseMaps =</span><br><span class="line">            loadMaterialTextures(material, aiTextureType_DIFFUSE, <span class="string">"texture_diffuse"</span>);</span><br><span class="line">    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; specularMaps =</span><br><span class="line">            loadMaterialTextures(material, aiTextureType_SPECULAR, <span class="string">"texture_specular"</span>);</span><br><span class="line">    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; normalMaps =</span><br><span class="line">            loadMaterialTextures(material, aiTextureType_NORMALS ,<span class="string">"texture_normal"</span>);</span><br><span class="line">    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; heightMaps =</span><br><span class="line">            loadMaterialTextures(material, aiTextureType_HEIGHT, <span class="string">"texture_height"</span>);</span><br><span class="line">    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Mesh(vertices, indices, textures);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;除此之外还有从 scene 对象里读取材质以及从文件里读取贴图的两个方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, <span class="built_in">std</span>::<span class="built_in">string</span> typeName) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;Texture&gt; textures;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mat-&gt;GetTextureCount(type); i++) &#123;</span><br><span class="line">        aiString str;</span><br><span class="line">        mat-&gt;GetTexture(type, i, &amp;str);</span><br><span class="line">        <span class="comment">// check if texture was loaded before and if so, continue to next iteration: skip loading a new texture</span></span><br><span class="line">        <span class="keyword">bool</span> skip = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;j : textures_loaded) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">std</span>::<span class="built_in">strcmp</span>(j.path.data(), str.C_Str()) == <span class="number">0</span>) &#123;</span><br><span class="line">                textures.push_back(j);</span><br><span class="line">                skip = <span class="literal">true</span>; <span class="comment">// a texture with the same filepath has already been loaded, continue to next one. (optimization)</span></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!skip) &#123;   <span class="comment">// if texture hasn't been loaded already, load it</span></span><br><span class="line">            Texture texture;</span><br><span class="line">            texture.id = TextureFromFile(str.C_Str(), <span class="keyword">this</span>-&gt;directory);</span><br><span class="line">            texture.type = typeName;</span><br><span class="line">            texture.path = str.C_Str();</span><br><span class="line">            textures.push_back(texture);</span><br><span class="line">            textures_loaded.push_back(texture);  <span class="comment">// store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> textures;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">TextureFromFile</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *path, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;directory, <span class="keyword">bool</span> gamma)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> filename = <span class="built_in">std</span>::<span class="built_in">string</span>(path);</span><br><span class="line">    filename = directory + <span class="string">'/'</span> + filename;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> textureID;</span><br><span class="line">    glGenTextures(<span class="number">1</span>, &amp;textureID);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> width, height, nrComponents;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *data = stbi_load(filename.c_str(), &amp;width, &amp;height, &amp;nrComponents, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (data) &#123;</span><br><span class="line">        GLenum format;</span><br><span class="line">        <span class="keyword">if</span> (nrComponents == <span class="number">1</span>)</span><br><span class="line">            format = GL_RED;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (nrComponents == <span class="number">3</span>)</span><br><span class="line">            format = GL_RGB;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (nrComponents == <span class="number">4</span>)</span><br><span class="line">            format = GL_RGBA;</span><br><span class="line"></span><br><span class="line">        glBindTexture(GL_TEXTURE_2D, textureID);</span><br><span class="line">        glTexImage2D(GL_TEXTURE_2D, <span class="number">0</span>, format, width, height, <span class="number">0</span>, format, GL_UNSIGNED_BYTE, data);</span><br><span class="line">        glGenerateMipmap(GL_TEXTURE_2D);</span><br><span class="line"></span><br><span class="line">        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);</span><br><span class="line">        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);</span><br><span class="line">        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);</span><br><span class="line">        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);</span><br><span class="line"></span><br><span class="line">        stbi_image_free(data);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Texture failed to load at path: "</span> &lt;&lt; path &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        stbi_image_free(data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> textureID;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/OpenGL/" rel="tag"> OpenGL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/04/【OpenGL】12-模型与Assimp库/" rel="next" title="【OpenGL】12-模型与Assimp库">
+                <i class="fa fa-chevron-left"></i> 【OpenGL】12-模型与Assimp库
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/05/Couples-Holding-Hands/" rel="prev" title="Couples-Holding-Hands">
+                Couples-Holding-Hands <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【OpenGL】13-Mesh与Model类',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

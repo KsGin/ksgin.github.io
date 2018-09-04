@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.0.6" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg?v=6.0.6">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.0.6" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.0.6',
+    sidebar: {"position":"left","display":"post","offset":15,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="参考教程Tutorial 30: Multiple Point Lights 学习记录&amp;emsp;&amp;emsp;这篇文章中我们将介绍点光源的以及实现多个点光源渲染平面。本次的框架如下：">
+<meta name="keywords" content="Computer graphics,DirectX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【DirectX】33-点光源">
+<meta property="og:url" content="https://blog.ksgin.com/2018/04/16/【DirectX】33-点光源/index.html">
+<meta property="og:site_name" content="杨帆博客">
+<meta property="og:description" content="参考教程Tutorial 30: Multiple Point Lights 学习记录&amp;emsp;&amp;emsp;这篇文章中我们将介绍点光源的以及实现多个点光源渲染平面。本次的框架如下：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://image.ibb.co/ciprp7/image.png">
+<meta property="og:image" content="https://image.ibb.co/m7G497/image.png">
+<meta property="og:updated_time" content="2018-08-22T01:38:23.284Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【DirectX】33-点光源">
+<meta name="twitter:description" content="参考教程Tutorial 30: Multiple Point Lights 学习记录&amp;emsp;&amp;emsp;这篇文章中我们将介绍点光源的以及实现多个点光源渲染平面。本次的框架如下：">
+<meta name="twitter:image" content="https://image.ibb.co/ciprp7/image.png">
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【DirectX】33-点光源 | 杨帆博客</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">杨帆博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">你想开发游戏还是改变世界？</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.ksgin.com/2018/04/16/【DirectX】33-点光源/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="KsGin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="杨帆博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【DirectX】33-点光源</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-16T18:32:26+08:00">2018-04-16</time>
+            
+
+            
+            
+              
+                
+              
+            
+
+            
+              
+              <span class="post-meta-divider">|</span>
+              
+
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于：</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-08-22T09:38:23+08:00">2018-08-22</time>
+            
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="参考教程"><a href="#参考教程" class="headerlink" title="参考教程"></a>参考教程</h4><p><a href="http://www.rastertek.com/dx11tut30.html" target="_blank" rel="noopener">Tutorial 30: Multiple Point Lights</a></p>
+<h4 id="学习记录"><a href="#学习记录" class="headerlink" title="学习记录"></a>学习记录</h4><p>&emsp;&emsp;这篇文章中我们将介绍点光源的以及实现多个点光源渲染平面。本次的框架如下：</p>
+<p><img src="https://image.ibb.co/ciprp7/image.png" alt="1"></p>
+<a id="more"></a>
+<p>&emsp;&emsp;这次的内容比较简单，我们首先修改 <code>LightClass</code> ，将其改为保存有点光源坐标和颜色的数据类：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Filename: lightclass.h</span></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _LIGHTCLASS_H_</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _LIGHTCLASS_H_</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//////////////</span></span><br><span class="line"><span class="comment">// INCLUDES //</span></span><br><span class="line"><span class="comment">//////////////</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;DirectXMath.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Class name: LightClass</span></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LightClass</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	LightClass();</span><br><span class="line">	LightClass(<span class="keyword">const</span> LightClass&amp;);</span><br><span class="line">	~LightClass();</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">SetDiffuseColor</span><span class="params">(<span class="keyword">float</span>, <span class="keyword">float</span>, <span class="keyword">float</span>, <span class="keyword">float</span>)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">SetPosition</span><span class="params">(<span class="keyword">float</span>, <span class="keyword">float</span>, <span class="keyword">float</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">	DirectX::<span class="function">XMFLOAT4 <span class="title">GetDiffuseColor</span><span class="params">()</span></span>;</span><br><span class="line">	DirectX::<span class="function">XMFLOAT4 <span class="title">GetPosition</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	DirectX::XMFLOAT4 m_diffuseColor;</span><br><span class="line">	DirectX::XMFLOAT4 m_position;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这只是一个用来保存数据的类，实现暂且不贴出来了。接下来看我们的 <code>LightShaderClass</code> ：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> NUM_LIGHTS = <span class="number">4</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Class name: LightShaderClass</span></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LightShaderClass</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">MatrixBufferType</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">		DirectX::XMMATRIX world;</span><br><span class="line">		DirectX::XMMATRIX view;</span><br><span class="line">		DirectX::XMMATRIX projection;</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">LightColorBufferType</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">		DirectX::XMFLOAT4 diffuseColor[NUM_LIGHTS];</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">LightPositionBufferType</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">		DirectX::XMFLOAT4 lightPosition[NUM_LIGHTS];</span><br><span class="line">	&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	LightShaderClass();</span><br><span class="line">	LightShaderClass(<span class="keyword">const</span> LightShaderClass&amp;);</span><br><span class="line">	~LightShaderClass();</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">Initialize</span><span class="params">(ID3D11Device*, HWND)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">Shutdown</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">Render</span><span class="params">(ID3D11DeviceContext*, <span class="keyword">int</span>, DirectX::XMMATRIX, DirectX::XMMATRIX, DirectX::XMMATRIX, </span></span></span><br><span class="line"><span class="function"><span class="params">		ID3D11ShaderResourceView*, DirectX::XMFLOAT4*, DirectX::XMFLOAT4*)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">InitializeShader</span><span class="params">(ID3D11Device*, HWND, CHAR*, CHAR*)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">ShutdownShader</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">OutputShaderErrorMessage</span><span class="params">(ID3D10Blob*, HWND, CHAR*)</span></span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">SetShaderParameters</span><span class="params">(ID3D11DeviceContext*, DirectX::XMMATRIX, DirectX::XMMATRIX, DirectX::XMMATRIX, ID3D11ShaderResourceView*, </span></span></span><br><span class="line"><span class="function"><span class="params">		DirectX::XMFLOAT4*, DirectX::XMFLOAT4*)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">RenderShader</span><span class="params">(ID3D11DeviceContext*, <span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	ID3D11VertexShader* m_vertexShader;</span><br><span class="line">	ID3D11PixelShader* m_pixelShader;</span><br><span class="line">	ID3D11InputLayout* m_layout;</span><br><span class="line">	ID3D11SamplerState* m_sampleState;</span><br><span class="line">	ID3D11Buffer* m_matrixBuffer;</span><br><span class="line">	ID3D11Buffer* m_lightColorBuffer;</span><br><span class="line">	ID3D11Buffer* m_lightPositionBuffer;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们新增加了两个结构体，<code>LightColorBufferType</code> 用来保存光颜色，<code>LightPositionBufferType</code> 用来保存光位置。需要注意到的是我们的 <code>Render</code> ，<code>SetShaderParameters</code> 的参数修改为需要接受两个 <code>FLOAT4</code> 数组，用来向光颜色数组和光位置数组传值。</p>
+<p>&emsp;&emsp;在 <code>InitializeShader</code> 方法中，这次我们要创建 <code>matrixBuffer</code> ，<code>lightColorBuffer</code> ，<code>lightPositionBuffer</code> 三个缓冲区，其中 <code>matrixBuffer</code> 和 <code>lightPositionBuffer</code> 两个将传给顶点着色器， <code>lightColorBuffer</code> 传给像素着色器。其实现如下（只列出部分）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, CHAR* vsFilename, CHAR* psFilename)</span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">    <span class="comment">// Setup the description of the matrix dynamic constant buffer that is in the vertex shader.</span></span><br><span class="line">    matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;</span><br><span class="line">	matrixBufferDesc.ByteWidth = <span class="keyword">sizeof</span>(MatrixBufferType);</span><br><span class="line">    matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;</span><br><span class="line">    matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;</span><br><span class="line">    matrixBufferDesc.MiscFlags = <span class="number">0</span>;</span><br><span class="line">	matrixBufferDesc.StructureByteStride = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Create the matrix constant buffer pointer so we can access the vertex shader constant buffer from within this class.</span></span><br><span class="line">	result = device-&gt;CreateBuffer(&amp;matrixBufferDesc, <span class="literal">NULL</span>, &amp;m_matrixBuffer);</span><br><span class="line">	<span class="keyword">if</span>(FAILED(result))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Setup the description of the light dynamic constant buffer that is in the pixel shader.</span></span><br><span class="line">	<span class="comment">// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.</span></span><br><span class="line">	lightColorBufferDesc.Usage = D3D11_USAGE_DYNAMIC;</span><br><span class="line">	lightColorBufferDesc.ByteWidth = <span class="keyword">sizeof</span>(LightColorBufferType);</span><br><span class="line">	lightColorBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;</span><br><span class="line">	lightColorBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;</span><br><span class="line">	lightColorBufferDesc.MiscFlags = <span class="number">0</span>;</span><br><span class="line">	lightColorBufferDesc.StructureByteStride = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.</span></span><br><span class="line">	result = device-&gt;CreateBuffer(&amp;lightColorBufferDesc, <span class="literal">NULL</span>, &amp;m_lightColorBuffer);</span><br><span class="line">	<span class="keyword">if</span>(FAILED(result))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Setup the description of the light dynamic constant buffer that is in the pixel shader.</span></span><br><span class="line">	<span class="comment">// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.</span></span><br><span class="line">	lightPositionBufferDesc.Usage = D3D11_USAGE_DYNAMIC;</span><br><span class="line">	lightPositionBufferDesc.ByteWidth = <span class="keyword">sizeof</span>(LightPositionBufferType);</span><br><span class="line">	lightPositionBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;</span><br><span class="line">	lightPositionBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;</span><br><span class="line">	lightPositionBufferDesc.MiscFlags = <span class="number">0</span>;</span><br><span class="line">	lightPositionBufferDesc.StructureByteStride = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.</span></span><br><span class="line">	result = device-&gt;CreateBuffer(&amp;lightPositionBufferDesc, <span class="literal">NULL</span>, &amp;m_lightPositionBuffer);</span><br><span class="line">	<span class="keyword">if</span>(FAILED(result))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在 <code>SetShaderParameters</code> 中，我们动态的为其赋值：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, </span><br><span class="line">										   DirectX::XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture,</span><br><span class="line">										   DirectX::XMFLOAT4 lightColor[], DirectX::XMFLOAT4 lightPosition[])</span><br><span class="line">&#123;</span><br><span class="line">	HRESULT result;</span><br><span class="line">    D3D11_MAPPED_SUBRESOURCE mappedResource;</span><br><span class="line">	MatrixBufferType* dataPtr;</span><br><span class="line">	LightColorBufferType* dataPtr2;</span><br><span class="line">	LightPositionBufferType* dataPtr3;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> bufferNumber;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Set shader texture resource in the pixel shader.</span></span><br><span class="line">	deviceContext-&gt;PSSetShaderResources(<span class="number">0</span>, <span class="number">1</span>, &amp;texture);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Lock the matrix constant buffer so it can be written to.</span></span><br><span class="line">	result = deviceContext-&gt;Map(m_matrixBuffer, <span class="number">0</span>, D3D11_MAP_WRITE_DISCARD, <span class="number">0</span>, &amp;mappedResource);</span><br><span class="line">	<span class="keyword">if</span>(FAILED(result))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Get a pointer to the data in the constant buffer.</span></span><br><span class="line">	dataPtr = (MatrixBufferType*)mappedResource.pData;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Transpose the matrices to prepare them for the shader.</span></span><br><span class="line">	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);</span><br><span class="line">	viewMatrix = DirectX::XMMatrixTranspose(viewMatrix);</span><br><span class="line">	projectionMatrix = DirectX::XMMatrixTranspose(projectionMatrix);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Copy the matrices into the constant buffer.</span></span><br><span class="line">	dataPtr-&gt;world = worldMatrix;</span><br><span class="line">	dataPtr-&gt;view = viewMatrix;</span><br><span class="line">	dataPtr-&gt;projection = projectionMatrix;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Unlock the matrix constant buffer.</span></span><br><span class="line">    deviceContext-&gt;Unmap(m_matrixBuffer, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Set the position of the matrix constant buffer in the vertex shader.</span></span><br><span class="line">	bufferNumber = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Now set the matrix constant buffer in the vertex shader with the updated values.</span></span><br><span class="line">    deviceContext-&gt;VSSetConstantBuffers(bufferNumber, <span class="number">1</span>, &amp;m_matrixBuffer);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Lock the light constant buffer so it can be written to.</span></span><br><span class="line">	result = deviceContext-&gt;Map(m_lightColorBuffer, <span class="number">0</span>, D3D11_MAP_WRITE_DISCARD, <span class="number">0</span>, &amp;mappedResource);</span><br><span class="line">	<span class="keyword">if</span>(FAILED(result))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Get a pointer to the data in the constant buffer.</span></span><br><span class="line">	dataPtr2 = (LightColorBufferType*)mappedResource.pData;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Copy the lighting variables into the constant buffer.</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; NUM_LIGHTS ; ++i) &#123;</span><br><span class="line">		dataPtr2-&gt;diffuseColor[i] = lightColor[i];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Unlock the constant buffer.</span></span><br><span class="line">	deviceContext-&gt;Unmap(m_lightColorBuffer, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Set the position of the light constant buffer in the pixel shader.</span></span><br><span class="line">	bufferNumber = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Finally set the light constant buffer in the pixel shader with the updated values.</span></span><br><span class="line">	deviceContext-&gt;PSSetConstantBuffers(bufferNumber, <span class="number">1</span>, &amp;m_lightColorBuffer);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Lock the light constant buffer so it can be written to.</span></span><br><span class="line">	result = deviceContext-&gt;Map(m_lightPositionBuffer, <span class="number">0</span>, D3D11_MAP_WRITE_DISCARD, <span class="number">0</span>, &amp;mappedResource);</span><br><span class="line">	<span class="keyword">if</span>(FAILED(result))</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Get a pointer to the data in the constant buffer.</span></span><br><span class="line">	dataPtr3 = (LightPositionBufferType*)mappedResource.pData;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Copy the lighting variables into the constant buffer.</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; NUM_LIGHTS ; ++i) &#123;</span><br><span class="line">		dataPtr3-&gt;lightPosition[i] = lightPosition[i];</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Unlock the constant buffer.</span></span><br><span class="line">	deviceContext-&gt;Unmap(m_lightPositionBuffer, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Set the position of the light constant buffer in the vertex shader.</span></span><br><span class="line">	bufferNumber = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Finally set the light constant buffer in the vertex shader with the updated values.</span></span><br><span class="line">	deviceContext-&gt;VSSetConstantBuffers(bufferNumber, <span class="number">1</span>, &amp;m_lightPositionBuffer);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在对应的着色器代码中，我们在顶点着色器中对光源坐标进行变换：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/////////////</span></span><br><span class="line"><span class="comment">// DEFINES //</span></span><br><span class="line"><span class="comment">/////////////</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM_LIGHTS 4</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/////////////</span></span><br><span class="line"><span class="comment">// GLOBALS //</span></span><br><span class="line"><span class="comment">/////////////</span></span><br><span class="line">cbuffer MatrixBuffer</span><br><span class="line">&#123;</span><br><span class="line">	matrix worldMatrix;</span><br><span class="line">	matrix viewMatrix;</span><br><span class="line">	matrix projectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">cbuffer LightPositionBuffer </span><br><span class="line">&#123;</span><br><span class="line">	float4 lightPosition[NUM_LIGHTS];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//////////////</span></span><br><span class="line"><span class="comment">// TYPEDEFS //</span></span><br><span class="line"><span class="comment">//////////////</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">VertexInputType</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    float4 position : POSITION;</span><br><span class="line">    float2 tex : TEXCOORD0;</span><br><span class="line">   	float3 normal : NORMAL;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PixelInputType</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    float4 position : SV_POSITION;</span><br><span class="line">    float2 tex : TEXCOORD0;</span><br><span class="line">	float3 normal : NORMAL;</span><br><span class="line">	float3 lightPos1 : TEXCOORD1;</span><br><span class="line">	float3 lightPos2 : TEXCOORD2;</span><br><span class="line">	float3 lightPos3 : TEXCOORD3;</span><br><span class="line">	float3 lightPos4 : TEXCOORD4;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Vertex Shader</span></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="function">PixelInputType <span class="title">LightVertexShader</span><span class="params">(VertexInputType input)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    PixelInputType output;</span><br><span class="line">	float4 worldPosition;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Change the position vector to be 4 units for proper matrix calculations.</span></span><br><span class="line">    input.position.w = <span class="number">1.0f</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Calculate the position of the vertex against the world, view, and projection matrices.</span></span><br><span class="line">    output.position = mul(input.position, worldMatrix);</span><br><span class="line">    output.position = mul(output.position, viewMatrix);</span><br><span class="line">    output.position = mul(output.position, projectionMatrix);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">// Store the texture coordinates for the pixel shader.</span></span><br><span class="line">	output.tex = input.tex;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">// Calculate the normal vector against the world matrix only.</span></span><br><span class="line">	output.normal = mul(input.normal, (float3x3)worldMatrix);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// Normalize the normal vector.</span></span><br><span class="line">	output.normal = normalize(output.normal);</span><br><span class="line">	</span><br><span class="line">	worldPosition = mul(input.position, worldMatrix);</span><br><span class="line"></span><br><span class="line">	output.lightPos1.xyz = lightPosition[<span class="number">0</span>].xyz - worldPosition.xyz;</span><br><span class="line">	output.lightPos2.xyz = lightPosition[<span class="number">1</span>].xyz - worldPosition.xyz;</span><br><span class="line">	output.lightPos3.xyz = lightPosition[<span class="number">2</span>].xyz - worldPosition.xyz;</span><br><span class="line">	output.lightPos4.xyz = lightPosition[<span class="number">3</span>].xyz - worldPosition.xyz;</span><br><span class="line"></span><br><span class="line">	output.lightPos1 = normalize(output.lightPos1);</span><br><span class="line">	output.lightPos2 = normalize(output.lightPos2);</span><br><span class="line">	output.lightPos3 = normalize(output.lightPos3);</span><br><span class="line">	output.lightPos4 = normalize(output.lightPos4);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;像素着色器中我们使用四个光混合进行计算最终颜色：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/////////////</span></span><br><span class="line"><span class="comment">// DEFINES //</span></span><br><span class="line"><span class="comment">/////////////</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM_LIGHTS 4</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/////////////</span></span><br><span class="line"><span class="comment">// GLOBALS //</span></span><br><span class="line"><span class="comment">/////////////</span></span><br><span class="line">Texture2D shaderTexture;</span><br><span class="line">SamplerState SampleType;</span><br><span class="line"></span><br><span class="line">cbuffer LightColorBuffer</span><br><span class="line">&#123;</span><br><span class="line">	float4 diffuseColor[NUM_LIGHTS];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//////////////</span></span><br><span class="line"><span class="comment">// TYPEDEFS //</span></span><br><span class="line"><span class="comment">//////////////</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">PixelInputType</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    float4 position : SV_POSITION;</span><br><span class="line">    float2 tex : TEXCOORD0;</span><br><span class="line">	float3 normal : NORMAL;</span><br><span class="line">	float3 lightPos1 : TEXCOORD1;</span><br><span class="line">	float3 lightPos2 : TEXCOORD2;</span><br><span class="line">	float3 lightPos3 : TEXCOORD3;</span><br><span class="line">	float3 lightPos4 : TEXCOORD4;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Pixel Shader</span></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line">float4 LightPixelShader(PixelInputType input) : SV_TARGET</span><br><span class="line">&#123;</span><br><span class="line">	float4 texColor;</span><br><span class="line">	<span class="keyword">float</span> lightIntensity1, lightIntensity2, lightIntensity3, lightIntensity4;</span><br><span class="line">	float4 color1, color2, color3, color4;</span><br><span class="line"></span><br><span class="line">	lightIntensity1 = saturate(dot(input.normal, input.lightPos1));</span><br><span class="line">	lightIntensity2 = saturate(dot(input.normal, input.lightPos2));</span><br><span class="line">	lightIntensity3 = saturate(dot(input.normal, input.lightPos3));</span><br><span class="line">	lightIntensity4 = saturate(dot(input.normal, input.lightPos4));</span><br><span class="line"></span><br><span class="line">	color1 = diffuseColor[<span class="number">0</span>] * lightIntensity1;</span><br><span class="line">	color2 = diffuseColor[<span class="number">1</span>] * lightIntensity2;</span><br><span class="line">	color3 = diffuseColor[<span class="number">2</span>] * lightIntensity3;</span><br><span class="line">	color4 = diffuseColor[<span class="number">3</span>] * lightIntensity4;</span><br><span class="line"></span><br><span class="line">	texColor = shaderTexture.Sample(SampleType, input.tex);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> saturate(color1 + color2 + color3 + color4) * texColor;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最后，修改我们的 <code>GraphicsClass</code> ，成员变量新加入了四个光源对象：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="comment">// Class name: GraphicsClass</span></span><br><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////////////</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GraphicsClass</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	GraphicsClass();</span><br><span class="line">	GraphicsClass(<span class="keyword">const</span> GraphicsClass&amp;);</span><br><span class="line">	~GraphicsClass();</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">Initialize</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">int</span>, HWND)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">Shutdown</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">Frame</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">bool</span> <span class="title">Render</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	D3DClass* m_D3D;</span><br><span class="line">	CameraClass* m_Camera;</span><br><span class="line">	ModelClass *m_Model;</span><br><span class="line">	LightClass *m_Light1 , *m_Light2 , *m_Light3 , *m_Light4;</span><br><span class="line">	LightShaderClass* m_LightShader;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在 <code>Initialize</code> 中初始化 light 对象：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> GraphicsClass::Initialize(<span class="keyword">int</span> screenWidth, <span class="keyword">int</span> screenHeight, HWND hwnd)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">bool</span> result;</span><br><span class="line">	...</span><br><span class="line">	m_Light1 = <span class="keyword">new</span> LightClass;</span><br><span class="line">	<span class="keyword">if</span> (!m_Light1) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	m_Light1-&gt;SetDiffuseColor(<span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>);</span><br><span class="line">	m_Light1-&gt;SetPosition(<span class="number">-10.0f</span>, <span class="number">1.0f</span>, <span class="number">10.0f</span>);</span><br><span class="line"></span><br><span class="line">	m_Light2 = <span class="keyword">new</span> LightClass;</span><br><span class="line">	<span class="keyword">if</span> (!m_Light2) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	m_Light2-&gt;SetDiffuseColor(<span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>);</span><br><span class="line">	m_Light2-&gt;SetPosition(<span class="number">10.0f</span>, <span class="number">1.0f</span>, <span class="number">10.0f</span>);</span><br><span class="line"></span><br><span class="line">	m_Light3 = <span class="keyword">new</span> LightClass;</span><br><span class="line">	<span class="keyword">if</span> (!m_Light3) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	m_Light3-&gt;SetDiffuseColor(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">1.0f</span>);</span><br><span class="line">	m_Light3-&gt;SetPosition(<span class="number">-10.0f</span>, <span class="number">1.0f</span>, <span class="number">-10.0f</span>);</span><br><span class="line"></span><br><span class="line">	m_Light4 = <span class="keyword">new</span> LightClass;</span><br><span class="line">	<span class="keyword">if</span> (!m_Light4) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	m_Light4-&gt;SetDiffuseColor(<span class="number">1.0f</span>, <span class="number">1.0f</span>, <span class="number">1.0f</span>, <span class="number">1.0f</span>);</span><br><span class="line">	m_Light4-&gt;SetPosition(<span class="number">10.0f</span>, <span class="number">1.0f</span>, <span class="number">-10.0f</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在 <code>Render</code> 里进行渲染：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> GraphicsClass::Render()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">bool</span> result;</span><br><span class="line"></span><br><span class="line">	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;</span><br><span class="line">	XMFLOAT4 diffusecolor[<span class="number">4</span>];</span><br><span class="line">	XMFLOAT4 lightPosition[<span class="number">4</span>];</span><br><span class="line"></span><br><span class="line">	diffusecolor[<span class="number">0</span>] = m_Light1-&gt;GetDiffuseColor();</span><br><span class="line">	diffusecolor[<span class="number">1</span>] = m_Light2-&gt;GetDiffuseColor();</span><br><span class="line">	diffusecolor[<span class="number">2</span>] = m_Light3-&gt;GetDiffuseColor();</span><br><span class="line">	diffusecolor[<span class="number">3</span>] = m_Light4-&gt;GetDiffuseColor();</span><br><span class="line"></span><br><span class="line">	lightPosition[<span class="number">0</span>] = m_Light1-&gt;GetPosition();</span><br><span class="line">	lightPosition[<span class="number">1</span>] = m_Light2-&gt;GetPosition();</span><br><span class="line">	lightPosition[<span class="number">2</span>] = m_Light3-&gt;GetPosition();</span><br><span class="line">	lightPosition[<span class="number">3</span>] = m_Light4-&gt;GetPosition();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	m_D3D-&gt;BeginScene(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>);</span><br><span class="line">	m_Camera-&gt;Render();</span><br><span class="line"></span><br><span class="line">	m_D3D-&gt;GetWorldMatrix(worldMatrix);</span><br><span class="line">	m_D3D-&gt;GetProjectionMatrix(projectionMatrix);</span><br><span class="line">	m_Camera-&gt;GetViewMatrix(viewMatrix);</span><br><span class="line"></span><br><span class="line">	m_Model-&gt;Render(m_D3D-&gt;GetDeviceContext());</span><br><span class="line"></span><br><span class="line">	worldMatrix *= XMMatrixScaling(<span class="number">10.0f</span> , <span class="number">0.1f</span> , <span class="number">10.0f</span>);</span><br><span class="line"></span><br><span class="line">	result = m_LightShader-&gt;Render(</span><br><span class="line">		m_D3D-&gt;GetDeviceContext(),</span><br><span class="line">		m_Model-&gt;GetIndexCount(),</span><br><span class="line">		worldMatrix,</span><br><span class="line">		viewMatrix,</span><br><span class="line">		projectionMatrix,</span><br><span class="line">		m_Model-&gt;GetTexture(),</span><br><span class="line">		diffusecolor,</span><br><span class="line">		lightPosition);</span><br><span class="line">	<span class="keyword">if</span> (!result) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	m_D3D-&gt;EndScene();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;最终效果如下：</p>
+<p><img src="https://image.ibb.co/m7G497/image.png" alt="2"></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Computer-graphics/" rel="tag"> Computer graphics</a>
+          
+            <a href="/tags/DirectX/" rel="tag"> DirectX</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/15/【DirectX】32-水/" rel="next" title="【DirectX】32-水">
+                <i class="fa fa-chevron-left"></i> 【DirectX】32-水
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/17/【DirectX】34-玻璃和冰效果/" rel="prev" title="【DirectX】34-玻璃和冰效果">
+                【DirectX】34-玻璃和冰效果 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+  <div id="gitalk-container">
+  </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="https://i.loli.net/2017/12/11/5a2ded5692edd.jpg"
+                alt="KsGin" />
+            
+              <p class="site-author-name" itemprop="name">KsGin</p>
+              <p class="site-description motion-element" itemprop="description">我喜欢你，真的</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">225</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/KsGin" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:imqqyangfan@gmail.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/u/0/101361480125270592603" target="_blank" title="Google"><i class="fa fa-fw fa-google"></i>Google</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/JoiJoker" target="_blank" title="Twitter"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考教程"><span class="nav-number">1.</span> <span class="nav-text">参考教程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学习记录"><span class="nav-number">2.</span> <span class="nav-text">学习记录</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">KsGin @ 2018</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/reading_progress/reading_progress.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.0.6"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.0.6"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.0.6"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.0.6"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.0.6"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.0.6"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+		var gitalk = new Gitalk({
+		  clientID: '4fe20a82e7e8045e841a',
+		  clientSecret: '74129f3236c623b7271aeb8ed4dacd990f5ef384',
+		  repo: 'ksgin.github.io',
+		  owner: 'ksgin',
+		  admin: ['ksgin'], 
+		  id: '【DirectX】33-点光源',
+		  distractionFreeMode: 'true'
+		})
+		gitalk.render('gitalk-container')           
+       </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
