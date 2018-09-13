@@ -9,14 +9,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[【C++学习笔记】2-简单C++对象模型]]></title>
-    <url>%2F2018%2F09%2F04%2F%E3%80%90C-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E3%80%912-%E7%AE%80%E5%8D%95C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B%2F</url>
-    <content type="text"><![CDATA[简单 C++ 对象模型（A Simple Object Model）&emsp;&emsp;不考虑太多设计，仅仅以降低复杂度而言，对于编译器最友好的模型如下：]]></content>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[Find-and-Replace-Pattern]]></title>
     <url>%2F2018%2F09%2F04%2FFind-and-Replace-Pattern%2F</url>
     <content type="text"><![CDATA[题目地址LeetCode#890 Find and Replace Pattern 题目描述&emsp;&emsp;You have a list of words and a pattern, and you want to know which words in words matches the pattern. &emsp;&emsp;A word matches the pattern if there exists a permutation of letters p so that after replacing every letter x in the pattern with p(x), we get the desired word. &emsp;&emsp;(Recall that a permutation of letters is a bijection from letters to letters: every letter maps to another letter, and no two letters map to the same letter.) &emsp;&emsp;Return a list of the words in words that match the given pattern. &emsp;&emsp;You may return the answer in any order. Example 1: 12345Input: words = [&quot;abc&quot;,&quot;deq&quot;,&quot;mee&quot;,&quot;aqq&quot;,&quot;dkd&quot;,&quot;ccc&quot;], pattern = &quot;abb&quot;Output: [&quot;mee&quot;,&quot;aqq&quot;]Explanation: &quot;mee&quot; matches the pattern because there is a permutation &#123;a -&gt; m, b -&gt; e, ...&#125;. &quot;ccc&quot; does not match the pattern because &#123;a -&gt; c, b -&gt; c, ...&#125; is not a permutation,since a and b map to the same letter. Note: 1 &lt;= words.length &lt;= 50 1 &lt;= pattern.length = words[i].length &lt;= 20 解题思路&emsp;&emsp;判断字符串是否满足 pattern 只需要判断每个字母相对于前边的字母是否相等的规律与 pattern 能否一致就可以了。 解题代码123456789101112131415161718192021class Solution &#123;public: vector&lt;string&gt; findAndReplacePattern(vector&lt;string&gt; &amp;words, string pattern) &#123; vector&lt;string&gt; res(0); bool isPattern; for (auto &amp;word : words) &#123; isPattern = true; for (int i = 1; i &lt; pattern.size(); ++i) &#123; for (int j = 0; j &lt; i; ++j) &#123; if ((word[i] == word[j]) ^ (pattern[i] == pattern[j])) &#123; isPattern = false; break; &#125; &#125; if (!isPattern) break; &#125; if (isPattern) res.push_back(word); &#125; return res; &#125;&#125;;]]></content>
