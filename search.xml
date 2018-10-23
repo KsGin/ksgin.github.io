@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[浅析CPU与GPU]]></title>
+    <url>%2F2018%2F10%2F10%2F%E6%B5%85%E6%9E%90CPU%E4%B8%8EGPU%2F</url>
+    <content type="text"><![CDATA[序言&emsp;&emsp;CPU（Central Processing Unit），中央处理单元]]></content>
+      <tags>
+        <tag>Computer graphics</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Reverse-Words-in-a-String]]></title>
     <url>%2F2018%2F09%2F13%2FReverse-Words-in-a-String%2F</url>
     <content type="text"><![CDATA[题目地址LeetCode#151 Reverse Words in a String 题目描述&emsp;&emsp;Given an input string, reverse the string word by word. Example: 12Input: &quot;the sky is blue&quot;,Output: &quot;blue is sky the&quot;. Note: A word is defined as a sequence of non-space characters. Input string may contain leading or trailing spaces. However, your reversed string should not contain leading or trailing spaces. You need to reduce multiple spaces between two words to a single space in the reversed string. Follow up: For C programmers, try to solve it in-place in O(1) space. 解题思路&emsp;&emsp;遍历每一个单字然后保存到栈里再组成一个字符串就OK，直接看代码。 解题代码1234567891011121314151617181920212223242526class Solution &#123;public: void reverseWords(string &amp;s) &#123; stringstream ss; stack&lt;string&gt; st; for (auto &amp; c : s) &#123; if (c == ' ' &amp;&amp; !ss.str().empty()) &#123; st.push(ss.str()); ss.str(""); &#125; else if (c != ' ')&#123; ss &lt;&lt; c; &#125; &#125; if (!ss.str().empty()) st.push(ss.str()); s = ""; while (!st.empty()) &#123; s += st.top(); if (st.size() &gt; 1) s += " "; st.pop(); &#125; &#125;&#125;;]]></content>
